@@ -7,6 +7,7 @@ junit/
 coverage/
 test-logs/
 config.json
+config.stdio.json
 env.list
 manifest.json
 sea-prep.blob

@@ -42,6 +42,7 @@ export async function startExpressServer({
         'Cache-Control',
         'Accept',
         'MCP-Protocol-Version',
+        'MCP-Session-Id',
       ],
       exposedHeaders: [SESSION_ID_HEADER, 'x-session-id'],
     }),
