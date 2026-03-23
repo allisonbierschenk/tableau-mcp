@@ -6,6 +6,7 @@ import { isTelemetryProvider, providerConfigSchema, TelemetryConfig } from './te
 import { isTransport, TransportName } from './transports.js';
 import { getDirname } from './utils/getDirname.js';
 import invariant from './utils/invariant.js';
+import { isSafeHttpHeaderName } from './utils/safeHttpHeaderName.js';
 
 const __dirname = getDirname();
 
@@ -72,6 +73,8 @@ export class Config {
   productTelemetryEndpoint: string;
   productTelemetryEnabled: boolean;
   isHyperforce: boolean;
+  /** HTTP header (lowercase) carrying Tableau username for JWT when MCP OAuth is off; empty = disabled */
+  jwtSubClaimRequestHeaderName: string;
 
   constructor() {
     const cleansedVars = removeClaudeMcpBundleUserConfigTemplates(process.env);
@@ -126,6 +129,7 @@ export class Config {
       PRODUCT_TELEMETRY_ENDPOINT: productTelemetryEndpoint,
       PRODUCT_TELEMETRY_ENABLED: productTelemetryEnabled,
       IS_HYPERFORCE: isHyperforce,
+      JWT_SUB_CLAIM_HEADER: jwtSubClaimHeader,
     } = cleansedVars;
 
     let jwtUsername = '';
@@ -227,6 +231,9 @@ export class Config {
     this.productTelemetryEnabled = productTelemetryEnabled !== 'false';
     this.isHyperforce = isHyperforce === 'true';
 
+    const jwtSubHeaderTrimmed = jwtSubClaimHeader?.trim() ?? '';
+    this.jwtSubClaimRequestHeaderName = jwtSubHeaderTrimmed.toLowerCase();
+
     this.auth = isAuthType(auth) ? auth : this.oauth.enabled ? 'oauth' : 'pat';
     this.transport = isTransport(transport) ? transport : this.oauth.enabled ? 'http' : 'stdio';
 
@@ -278,6 +285,8 @@ export class Config {
         throw new Error('TRANSPORT must be "http" when OAUTH_ISSUER is set');
       }
     }
+
+    validateJwtSubClaimHeaderConfig(this);
 
     this.maxRequestTimeoutMs = parseNumber(maxRequestTimeoutMs, {
       defaultValue: TEN_MINUTES_IN_MS,
@@ -342,6 +351,25 @@ export class Config {
       uatPrivateKey || (uatPrivateKeyPath ? readFileSync(uatPrivateKeyPath, 'utf8') : '');
     this.uatKeyId = uatKeyId ?? '';
     this.jwtAdditionalPayload = jwtAdditionalPayload || '{}';
+  }
+}
+
+function validateJwtSubClaimHeaderConfig(config: Config): void {
+  if (!config.jwtSubClaimRequestHeaderName) {
+    return;
+  }
+
+  if (config.transport !== 'http') {
+    throw new Error('JWT_SUB_CLAIM_HEADER is only supported when TRANSPORT is "http"');
+  }
+  if (config.oauth.enabled) {
+    throw new Error(
+      'JWT_SUB_CLAIM_HEADER cannot be used when OAuth is enabled (OAUTH_ISSUER is set)',
+    );
+  }
+
+  if (!isSafeHttpHeaderName(config.jwtSubClaimRequestHeaderName)) {
+    throw new Error('JWT_SUB_CLAIM_HEADER must be a valid HTTP header name');
   }
 }
 

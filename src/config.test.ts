@@ -435,6 +435,64 @@ describe('Config', () => {
     });
   });
 
+  describe('JWT sub claim request header', () => {
+    function stubDirectTrustHttpStateless(): void {
+      vi.stubEnv('AUTH', 'direct-trust');
+      vi.stubEnv('JWT_SUB_CLAIM', '{OAUTH_USERNAME}');
+      vi.stubEnv('CONNECTED_APP_CLIENT_ID', 'test-client-id');
+      vi.stubEnv('CONNECTED_APP_SECRET_ID', 'test-secret-id');
+      vi.stubEnv('CONNECTED_APP_SECRET_VALUE', 'test-secret-value');
+      vi.stubEnv('TRANSPORT', 'http');
+      vi.stubEnv('DANGEROUSLY_DISABLE_OAUTH', 'true');
+      vi.stubEnv('DISABLE_SESSION_MANAGEMENT', 'true');
+      vi.stubEnv('JWT_SUB_CLAIM_HEADER', 'X-Tableau-Jwt-Username');
+    }
+
+    it('should parse JWT sub claim header settings when requirements are met', () => {
+      stubDirectTrustHttpStateless();
+
+      const config = new Config();
+      expect(config.jwtSubClaimRequestHeaderName).toBe('x-tableau-jwt-username');
+    });
+
+    it('should throw when JWT_SUB_CLAIM_HEADER is set with TRANSPORT stdio', () => {
+      stubDirectTrustHttpStateless();
+      vi.stubEnv('TRANSPORT', 'stdio');
+
+      expect(() => new Config()).toThrow(
+        'JWT_SUB_CLAIM_HEADER is only supported when TRANSPORT is "http"',
+      );
+    });
+
+    it('should allow JWT_SUB_CLAIM_HEADER when DISABLE_SESSION_MANAGEMENT is false (request-scoped auth)', () => {
+      stubDirectTrustHttpStateless();
+      vi.stubEnv('DISABLE_SESSION_MANAGEMENT', 'false');
+
+      const config = new Config();
+      expect(config.jwtSubClaimRequestHeaderName).toBe('x-tableau-jwt-username');
+      expect(config.disableSessionManagement).toBe(false);
+    });
+
+    it('should throw when JWT_SUB_CLAIM_HEADER is set while OAuth is enabled', () => {
+      stubDirectTrustHttpStateless();
+      vi.stubEnv('DANGEROUSLY_DISABLE_OAUTH', undefined);
+      vi.stubEnv('OAUTH_ISSUER', 'https://mcp.example.com');
+      vi.stubEnv('OAUTH_REDIRECT_URI', 'https://mcp.example.com/Callback');
+      vi.stubEnv('OAUTH_JWE_PRIVATE_KEY', '-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIA==\n-----END PRIVATE KEY-----');
+
+      expect(() => new Config()).toThrow(
+        'JWT_SUB_CLAIM_HEADER cannot be used when OAuth is enabled (OAUTH_ISSUER is set)',
+      );
+    });
+
+    it('should throw when JWT_SUB_CLAIM_HEADER is not a valid header name', () => {
+      stubDirectTrustHttpStateless();
+      vi.stubEnv('JWT_SUB_CLAIM_HEADER', 'Bad Name');
+
+      expect(() => new Config()).toThrow('JWT_SUB_CLAIM_HEADER must be a valid HTTP header name');
+    });
+  });
+
   describe('UAT configuration config parsing', () => {
     function stubDefaultUatEnvVars(): void {
       vi.stubEnv('AUTH', 'uat');
