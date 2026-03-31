@@ -20,17 +20,22 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     groupSetId: string,
     groupId: string,
   ): Promise<unknown> =>
-    await this._apiClient.addGroupToGroupSet({
-      params: { siteId, groupSetId, groupId },
-      ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.addGroupToGroupSet>[0]);
+    (
+      await this._apiClient.axios.put(
+        `/sites/${siteId}/groupsets/${groupSetId}/groups/${groupId}`,
+        undefined,
+        { ...this.authHeader },
+      )
+    ).data;
 
   addUserToGroup = async (siteId: string, groupId: string, body: unknown): Promise<unknown> =>
-    await (this._apiClient as any).addUserToGroup(body, {
-      siteId,
-      groupId,
-      ...this.authHeader,
-    });
+    (
+      await this._apiClient.axios.post(
+        `/sites/${siteId}/groups/${groupId}/users`,
+        body,
+        this.authHeader,
+      )
+    ).data;
 
   addUserToSite = async (siteId: string, body: unknown): Promise<unknown> =>
     await (async () => {
@@ -52,74 +57,71 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     body: unknown,
     queries?: { asJob?: boolean },
   ): Promise<unknown> =>
-    await (this._apiClient as any).createGroup(body, {
-      siteId,
-      asJob: queries?.asJob,
-      ...this.authHeader,
-    });
+    (
+      await this._apiClient.axios.post(`/sites/${siteId}/groups`, body, {
+        ...this.authHeader,
+        params: queries,
+      })
+    ).data;
 
   createGroupSet = async (siteId: string, body: unknown): Promise<unknown> =>
-    await (this._apiClient as any).createGroupSet(body, {
-      siteId,
-      ...this.authHeader,
-    });
+    (await this._apiClient.axios.post(`/sites/${siteId}/groupsets`, body, this.authHeader)).data;
 
   deleteGroup = async (siteId: string, groupId: string): Promise<unknown> =>
-    await this._apiClient.deleteGroup({
-      params: { siteId, groupId },
-      ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.deleteGroup>[0]);
+    (await this._apiClient.axios.delete(`/sites/${siteId}/groups/${groupId}`, this.authHeader))
+      .data;
 
   deleteGroupSet = async (siteId: string, groupSetId: string): Promise<unknown> =>
-    await this._apiClient.deleteGroupSet({
-      params: { siteId, groupSetId },
-      ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.deleteGroupSet>[0]);
+    (
+      await this._apiClient.axios.delete(
+        `/sites/${siteId}/groupsets/${groupSetId}`,
+        this.authHeader,
+      )
+    ).data;
 
   deleteUsersFromSiteWithCsv = async (siteId: string, body: unknown): Promise<unknown> =>
-    await (this._apiClient as any).deleteUsersFromSiteWithCsv(body, {
-      siteId,
-      ...this.authHeader,
-    });
+    (await this._apiClient.axios.post(`/sites/${siteId}/users/delete`, body, this.authHeader)).data;
 
   downloadUserCredentials = async (
     siteId: string,
     userId: string,
     body: unknown,
   ): Promise<unknown> =>
-    await (this._apiClient as any).downloadUserCredentials(body, {
-      siteId,
-      userId,
-      ...this.authHeader,
-    });
+    (
+      await this._apiClient.axios.post(
+        `/sites/${siteId}/users/${userId}/retrieveSavedCreds`,
+        body,
+        this.authHeader,
+      )
+    ).data;
 
   getGroupsForUser = async (
     siteId: string,
     userId: string,
     queries?: PagingQuery,
   ): Promise<unknown> =>
-    await this._apiClient.getGroupsForUser({
-      params: { siteId, userId },
-      queries,
-      ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.getGroupsForUser>[0]);
+    (
+      await this._apiClient.axios.get(`/sites/${siteId}/users/${userId}/groups`, {
+        ...this.authHeader,
+        params: queries,
+      })
+    ).data;
 
   getGroupSet = async (siteId: string, groupSetId: string): Promise<unknown> =>
-    await this._apiClient.getGroupSet({
-      params: { siteId, groupSetId },
-      ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.getGroupSet>[0]);
+    (await this._apiClient.axios.get(`/sites/${siteId}/groupsets/${groupSetId}`, this.authHeader))
+      .data;
 
   getUsersInGroup = async (
     siteId: string,
     groupId: string,
     queries?: PagingQuery,
   ): Promise<unknown> =>
-    await this._apiClient.getUsersInGroup({
-      params: { siteId, groupId },
-      queries,
-      ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.getUsersInGroup>[0]);
+    (
+      await this._apiClient.axios.get(`/sites/${siteId}/groups/${groupId}/users`, {
+        ...this.authHeader,
+        params: queries,
+      })
+    ).data;
 
   getUsersOnSite = async (
     siteId: string,
@@ -137,47 +139,49 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     body: unknown,
     queries?: { isVerbose?: boolean },
   ): Promise<unknown> =>
-    await (this._apiClient as any).importUsersToSiteFromCsv(body, {
-      siteId,
-      isVerbose: queries?.isVerbose,
-      ...this.authHeader,
-    });
+    (
+      await this._apiClient.axios.post(`/sites/${siteId}/users/import`, body, {
+        ...this.authHeader,
+        params: queries,
+      })
+    ).data;
 
   listGroupSets = async (
     siteId: string,
     queries?: PagingQuery & { filter?: string; sort?: string },
   ): Promise<unknown> =>
-    await this._apiClient.listGroupSets({
-      params: { siteId },
-      queries,
-      ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.listGroupSets>[0]);
+    (
+      await this._apiClient.axios.get(`/sites/${siteId}/groupsets`, {
+        ...this.authHeader,
+        params: queries,
+      })
+    ).data;
 
   queryGroups = async (
     siteId: string,
     queries?: PagingQuery & { filter?: string; sort?: string },
   ): Promise<unknown> =>
-    await this._apiClient.queryGroups({
-      params: { siteId },
-      queries,
-      ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.queryGroups>[0]);
+    (
+      await this._apiClient.axios.get(`/sites/${siteId}/groups`, {
+        ...this.authHeader,
+        params: queries,
+      })
+    ).data;
 
   queryUserOnSite = async (siteId: string, userId: string): Promise<unknown> =>
-    await this._apiClient.queryUserOnSite({
-      params: { siteId, userId },
-      ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.queryUserOnSite>[0]);
+    (await this._apiClient.axios.get(`/sites/${siteId}/users/${userId}`, this.authHeader)).data;
 
   removeGroupFromGroupSet = async (
     siteId: string,
     groupSetId: string,
     groupId: string,
   ): Promise<unknown> =>
-    await this._apiClient.removeGroupFromGroupSet({
-      params: { siteId, groupSetId, groupId },
-      ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.removeGroupFromGroupSet>[0]);
+    (
+      await this._apiClient.axios.delete(
+        `/sites/${siteId}/groupsets/${groupSetId}/groups/${groupId}`,
+        this.authHeader,
+      )
+    ).data;
 
   removeUserFromSite = async (
     siteId: string,
@@ -192,21 +196,25 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     ).data;
 
   removeUserFromGroup = async (siteId: string, groupId: string, userId: string): Promise<unknown> =>
-    await this._apiClient.removeUserFromGroup({
-      params: { siteId, groupId, userId },
-      ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.removeUserFromGroup>[0]);
+    (
+      await this._apiClient.axios.delete(
+        `/sites/${siteId}/groups/${groupId}/users/${userId}`,
+        this.authHeader,
+      )
+    ).data;
 
   bulkRemoveUsersFromGroup = async (
     siteId: string,
     groupId: string,
     body: unknown,
   ): Promise<unknown> =>
-    await (this._apiClient as any).bulkRemoveUsersFromGroup(body, {
-      siteId,
-      groupId,
-      ...this.authHeader,
-    });
+    (
+      await this._apiClient.axios.put(
+        `/sites/${siteId}/groups/${groupId}/users/remove`,
+        body,
+        this.authHeader,
+      )
+    ).data;
 
   updateGroup = async (
     siteId: string,
@@ -214,19 +222,21 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     body: unknown,
     queries?: { asJob?: boolean },
   ): Promise<unknown> =>
-    await (this._apiClient as any).updateGroup(body, {
-      siteId,
-      groupId,
-      asJob: queries?.asJob,
-      ...this.authHeader,
-    });
+    (
+      await this._apiClient.axios.put(`/sites/${siteId}/groups/${groupId}`, body, {
+        ...this.authHeader,
+        params: queries,
+      })
+    ).data;
 
   updateGroupSet = async (siteId: string, groupSetId: string, body: unknown): Promise<unknown> =>
-    await (this._apiClient as any).updateGroupSet(body, {
-      siteId,
-      groupSetId,
-      ...this.authHeader,
-    });
+    (
+      await this._apiClient.axios.put(
+        `/sites/${siteId}/groupsets/${groupSetId}`,
+        body,
+        this.authHeader,
+      )
+    ).data;
 
   updateUser = async (siteId: string, userId: string, body: unknown): Promise<unknown> =>
     (
