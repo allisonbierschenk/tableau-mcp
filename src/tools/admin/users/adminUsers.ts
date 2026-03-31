@@ -61,7 +61,6 @@ export const getAdminUsersTool = (server: Server): Tool<typeof paramsSchema> => 
       openWorldHint: false,
     },
     callback: async (args, extra): Promise<CallToolResult> => {
-      const siteId = args.siteId;
       return await tool.logAndExecute({
         extra,
         args,
@@ -71,8 +70,8 @@ export const getAdminUsersTool = (server: Server): Tool<typeof paramsSchema> => 
               ...extra,
               jwtScopes: jwtScopesByOperation[args.operation],
               callback: async (restApi) => {
-                const resolvedSiteId = siteId ?? restApi.siteId;
-                return await invokeOperation(restApi, resolvedSiteId, args);
+                // Always use site LUID from authenticated context.
+                return await invokeOperation(restApi, restApi.siteId, args);
               },
             }),
           );
