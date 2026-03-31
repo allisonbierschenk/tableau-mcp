@@ -1,3 +1,4 @@
+import { isAxiosError } from '../../utils/axios.js';
 import { getSiteLuidFromAccessToken } from '../../utils/getSiteLuidFromAccessToken.js';
 import { AuthConfig } from './authConfig.js';
 import {
@@ -300,6 +301,20 @@ export class RestApi {
         return response;
       },
       (error) => {
+        if (isAxiosError(error)) {
+          const method = error.config?.method?.toUpperCase() ?? 'UNKNOWN';
+          const requestUrl = error.config?.url ?? 'UNKNOWN_URL';
+          const status = error.response?.status ?? 'NO_STATUS';
+          const responseData = error.response?.data ?? 'NO_RESPONSE_BODY';
+          // Diagnostic logging to debug upstream Tableau 404s and other failures.
+          console.error('Tableau API request failed:', {
+            baseUrl,
+            method,
+            requestUrl,
+            status,
+            responseData,
+          });
+        }
         this._responseInterceptor?.[1]?.(error, baseUrl);
         return Promise.reject(error);
       },
