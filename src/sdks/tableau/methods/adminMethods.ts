@@ -229,16 +229,16 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     });
 
   updateUser = async (siteId: string, userId: string, body: unknown): Promise<unknown> =>
-    await (this._apiClient as any).updateUser(body, {
-      siteId,
-      userId,
-      ...this.authHeader,
-    });
+    (
+      await this._apiClient.axios.put(`/sites/${siteId}/users/${userId}`, body, {
+        ...this.authHeader,
+      })
+    ).data;
 
   uploadUserCredentials = async (siteId: string, userId: string, body: unknown): Promise<unknown> =>
-    await (this._apiClient as any).uploadUserCredentials(body, {
-      siteId,
-      userId,
-      ...this.authHeader,
-    });
+    (
+      await this._apiClient.axios.put(`/sites/${siteId}/users/${userId}/uploadSavedCreds`, body, {
+        ...this.authHeader,
+      })
+    ).data;
 }
