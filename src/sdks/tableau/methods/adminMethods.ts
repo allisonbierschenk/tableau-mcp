@@ -41,10 +41,10 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
         siteId,
         url,
       });
-      return await (this._apiClient as any).addUserToSite(body, {
-        params: { siteId },
+      const response = await this._apiClient.axios.post(url, body, {
         ...this.authHeader,
       });
+      return response.data;
     })();
 
   createGroup = async (
@@ -125,11 +125,12 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     siteId: string,
     queries?: PagingQuery & { filter?: string; sort?: string; fields?: string },
   ): Promise<unknown> =>
-    await (this._apiClient as any).getUsersOnSite(undefined, {
-      params: { siteId },
-      queries,
-      ...this.authHeader,
-    });
+    (
+      await this._apiClient.axios.get(`/sites/${siteId}/users`, {
+        ...this.authHeader,
+        params: queries,
+      })
+    ).data;
 
   importUsersToSiteFromCsv = async (
     siteId: string,
@@ -183,11 +184,12 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     userId: string,
     queries?: { mapAssetsTo?: string },
   ): Promise<unknown> =>
-    await (this._apiClient as any).removeUserFromSite(undefined, {
-      params: { siteId, userId },
-      queries,
-      ...this.authHeader,
-    });
+    (
+      await this._apiClient.axios.delete(`/sites/${siteId}/users/${userId}`, {
+        ...this.authHeader,
+        params: queries,
+      })
+    ).data;
 
   removeUserFromGroup = async (siteId: string, groupId: string, userId: string): Promise<unknown> =>
     await this._apiClient.removeUserFromGroup({
