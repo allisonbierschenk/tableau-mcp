@@ -26,11 +26,10 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     } as unknown as Parameters<typeof this._apiClient.addGroupToGroupSet>[0]);
 
   addUserToGroup = async (siteId: string, groupId: string, body: unknown): Promise<unknown> =>
-    await this._apiClient.addUserToGroup({
+    await (this._apiClient as any).addUserToGroup(body, {
       params: { siteId, groupId },
-      body,
       ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.addUserToGroup>[0]);
+    });
 
   addUserToSite = async (siteId: string, body: unknown): Promise<unknown> =>
     await (async () => {
@@ -41,11 +40,10 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
         siteId,
         url,
       });
-      return await this._apiClient.addUserToSite({
+      return await (this._apiClient as any).addUserToSite(body, {
         params: { siteId },
-        body,
         ...this.authHeader,
-      } as unknown as Parameters<typeof this._apiClient.addUserToSite>[0]);
+      });
     })();
 
   createGroup = async (
@@ -53,19 +51,17 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     body: unknown,
     queries?: { asJob?: boolean },
   ): Promise<unknown> =>
-    await this._apiClient.createGroup({
+    await (this._apiClient as any).createGroup(body, {
       params: { siteId },
       queries,
-      body,
       ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.createGroup>[0]);
+    });
 
   createGroupSet = async (siteId: string, body: unknown): Promise<unknown> =>
-    await this._apiClient.createGroupSet({
+    await (this._apiClient as any).createGroupSet(body, {
       params: { siteId },
-      body,
       ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.createGroupSet>[0]);
+    });
 
   deleteGroup = async (siteId: string, groupId: string): Promise<unknown> =>
     await this._apiClient.deleteGroup({
@@ -80,22 +76,20 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     } as unknown as Parameters<typeof this._apiClient.deleteGroupSet>[0]);
 
   deleteUsersFromSiteWithCsv = async (siteId: string, body: unknown): Promise<unknown> =>
-    await this._apiClient.deleteUsersFromSiteWithCsv({
+    await (this._apiClient as any).deleteUsersFromSiteWithCsv(body, {
       params: { siteId },
-      body,
       ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.deleteUsersFromSiteWithCsv>[0]);
+    });
 
   downloadUserCredentials = async (
     siteId: string,
     userId: string,
     body: unknown,
   ): Promise<unknown> =>
-    await this._apiClient.downloadUserCredentials({
+    await (this._apiClient as any).downloadUserCredentials(body, {
       params: { siteId, userId },
-      body,
       ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.downloadUserCredentials>[0]);
+    });
 
   getGroupsForUser = async (
     siteId: string,
@@ -140,12 +134,11 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     body: unknown,
     queries?: { isVerbose?: boolean },
   ): Promise<unknown> =>
-    await this._apiClient.importUsersToSiteFromCsv({
+    await (this._apiClient as any).importUsersToSiteFromCsv(body, {
       params: { siteId },
       queries,
-      body,
       ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.importUsersToSiteFromCsv>[0]);
+    });
 
   listGroupSets = async (
     siteId: string,
@@ -205,11 +198,10 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     groupId: string,
     body: unknown,
   ): Promise<unknown> =>
-    await this._apiClient.bulkRemoveUsersFromGroup({
+    await (this._apiClient as any).bulkRemoveUsersFromGroup(body, {
       params: { siteId, groupId },
-      body,
       ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.bulkRemoveUsersFromGroup>[0]);
+    });
 
   updateGroup = async (
     siteId: string,
@@ -217,31 +209,27 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     body: unknown,
     queries?: { asJob?: boolean },
   ): Promise<unknown> =>
-    await this._apiClient.updateGroup({
+    await (this._apiClient as any).updateGroup(body, {
       params: { siteId, groupId },
       queries,
-      body,
       ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.updateGroup>[0]);
+    });
 
   updateGroupSet = async (siteId: string, groupSetId: string, body: unknown): Promise<unknown> =>
-    await this._apiClient.updateGroupSet({
+    await (this._apiClient as any).updateGroupSet(body, {
       params: { siteId, groupSetId },
-      body,
       ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.updateGroupSet>[0]);
+    });
 
   updateUser = async (siteId: string, userId: string, body: unknown): Promise<unknown> =>
-    await this._apiClient.updateUser({
+    await (this._apiClient as any).updateUser(body, {
       params: { siteId, userId },
-      body,
       ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.updateUser>[0]);
+    });
 
   uploadUserCredentials = async (siteId: string, userId: string, body: unknown): Promise<unknown> =>
-    await this._apiClient.uploadUserCredentials({
+    await (this._apiClient as any).uploadUserCredentials(body, {
       params: { siteId, userId },
-      body,
       ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.uploadUserCredentials>[0]);
+    });
 }
