@@ -20,14 +20,10 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     groupSetId: string,
     groupId: string,
   ): Promise<unknown> =>
-    await (this._apiClient as any).addGroupToGroupSet(
-      {
-        siteId,
-        groupSetId,
-        groupId,
-      },
-      this.authHeader,
-    );
+    await this._apiClient.addGroupToGroupSet({
+      params: { siteId, groupSetId, groupId },
+      ...this.authHeader,
+    } as unknown as Parameters<typeof this._apiClient.addGroupToGroupSet>[0]);
 
   addUserToGroup = async (siteId: string, groupId: string, body: unknown): Promise<unknown> =>
     await (this._apiClient as any).addUserToGroup(body, {
@@ -69,10 +65,16 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     });
 
   deleteGroup = async (siteId: string, groupId: string): Promise<unknown> =>
-    await (this._apiClient as any).deleteGroup({ siteId, groupId }, this.authHeader);
+    await this._apiClient.deleteGroup({
+      params: { siteId, groupId },
+      ...this.authHeader,
+    } as unknown as Parameters<typeof this._apiClient.deleteGroup>[0]);
 
   deleteGroupSet = async (siteId: string, groupSetId: string): Promise<unknown> =>
-    await (this._apiClient as any).deleteGroupSet({ siteId, groupSetId }, this.authHeader);
+    await this._apiClient.deleteGroupSet({
+      params: { siteId, groupSetId },
+      ...this.authHeader,
+    } as unknown as Parameters<typeof this._apiClient.deleteGroupSet>[0]);
 
   deleteUsersFromSiteWithCsv = async (siteId: string, body: unknown): Promise<unknown> =>
     await (this._apiClient as any).deleteUsersFromSiteWithCsv(body, {
@@ -96,49 +98,38 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     userId: string,
     queries?: PagingQuery,
   ): Promise<unknown> =>
-    await (this._apiClient as any).getGroupsForUser(
-      {
-        siteId,
-        userId,
-        pageSize: queries?.pageSize,
-        pageNumber: queries?.pageNumber,
-      },
-      this.authHeader,
-    );
+    await this._apiClient.getGroupsForUser({
+      params: { siteId, userId },
+      queries,
+      ...this.authHeader,
+    } as unknown as Parameters<typeof this._apiClient.getGroupsForUser>[0]);
 
   getGroupSet = async (siteId: string, groupSetId: string): Promise<unknown> =>
-    await (this._apiClient as any).getGroupSet({ siteId, groupSetId }, this.authHeader);
+    await this._apiClient.getGroupSet({
+      params: { siteId, groupSetId },
+      ...this.authHeader,
+    } as unknown as Parameters<typeof this._apiClient.getGroupSet>[0]);
 
   getUsersInGroup = async (
     siteId: string,
     groupId: string,
     queries?: PagingQuery,
   ): Promise<unknown> =>
-    await (this._apiClient as any).getUsersInGroup(
-      {
-        siteId,
-        groupId,
-        pageSize: queries?.pageSize,
-        pageNumber: queries?.pageNumber,
-      },
-      this.authHeader,
-    );
+    await this._apiClient.getUsersInGroup({
+      params: { siteId, groupId },
+      queries,
+      ...this.authHeader,
+    } as unknown as Parameters<typeof this._apiClient.getUsersInGroup>[0]);
 
   getUsersOnSite = async (
     siteId: string,
     queries?: PagingQuery & { filter?: string; sort?: string; fields?: string },
   ): Promise<unknown> =>
-    await (this._apiClient as any).getUsersOnSite(
-      {
-        siteId,
-        pageSize: queries?.pageSize,
-        pageNumber: queries?.pageNumber,
-        filter: queries?.filter,
-        sort: queries?.sort,
-        fields: queries?.fields,
-      },
-      this.authHeader,
-    );
+    await this._apiClient.getUsersOnSite({
+      params: { siteId },
+      queries,
+      ...this.authHeader,
+    } as unknown as Parameters<typeof this._apiClient.getUsersOnSite>[0]);
 
   importUsersToSiteFromCsv = async (
     siteId: string,
@@ -155,68 +146,54 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     siteId: string,
     queries?: PagingQuery & { filter?: string; sort?: string },
   ): Promise<unknown> =>
-    await (this._apiClient as any).listGroupSets(
-      {
-        siteId,
-        pageSize: queries?.pageSize,
-        pageNumber: queries?.pageNumber,
-        filter: queries?.filter,
-        sort: queries?.sort,
-      },
-      this.authHeader,
-    );
+    await this._apiClient.listGroupSets({
+      params: { siteId },
+      queries,
+      ...this.authHeader,
+    } as unknown as Parameters<typeof this._apiClient.listGroupSets>[0]);
 
   queryGroups = async (
     siteId: string,
     queries?: PagingQuery & { filter?: string; sort?: string },
   ): Promise<unknown> =>
-    await (this._apiClient as any).queryGroups(
-      {
-        siteId,
-        pageSize: queries?.pageSize,
-        pageNumber: queries?.pageNumber,
-        filter: queries?.filter,
-        sort: queries?.sort,
-      },
-      this.authHeader,
-    );
+    await this._apiClient.queryGroups({
+      params: { siteId },
+      queries,
+      ...this.authHeader,
+    } as unknown as Parameters<typeof this._apiClient.queryGroups>[0]);
 
   queryUserOnSite = async (siteId: string, userId: string): Promise<unknown> =>
-    await (this._apiClient as any).queryUserOnSite({ siteId, userId }, this.authHeader);
+    await this._apiClient.queryUserOnSite({
+      params: { siteId, userId },
+      ...this.authHeader,
+    } as unknown as Parameters<typeof this._apiClient.queryUserOnSite>[0]);
 
   removeGroupFromGroupSet = async (
     siteId: string,
     groupSetId: string,
     groupId: string,
   ): Promise<unknown> =>
-    await (this._apiClient as any).removeGroupFromGroupSet(
-      {
-        siteId,
-        groupSetId,
-        groupId,
-      },
-      this.authHeader,
-    );
+    await this._apiClient.removeGroupFromGroupSet({
+      params: { siteId, groupSetId, groupId },
+      ...this.authHeader,
+    } as unknown as Parameters<typeof this._apiClient.removeGroupFromGroupSet>[0]);
 
   removeUserFromSite = async (
     siteId: string,
     userId: string,
     queries?: { mapAssetsTo?: string },
   ): Promise<unknown> =>
-    await (this._apiClient as any).removeUserFromSite(
-      {
-        siteId,
-        userId,
-        mapAssetsTo: queries?.mapAssetsTo,
-      },
-      this.authHeader,
-    );
+    await this._apiClient.removeUserFromSite({
+      params: { siteId, userId },
+      queries,
+      ...this.authHeader,
+    } as unknown as Parameters<typeof this._apiClient.removeUserFromSite>[0]);
 
   removeUserFromGroup = async (siteId: string, groupId: string, userId: string): Promise<unknown> =>
-    await (this._apiClient as any).removeUserFromGroup(
-      { siteId, groupId, userId },
-      this.authHeader,
-    );
+    await this._apiClient.removeUserFromGroup({
+      params: { siteId, groupId, userId },
+      ...this.authHeader,
+    } as unknown as Parameters<typeof this._apiClient.removeUserFromGroup>[0]);
 
   bulkRemoveUsersFromGroup = async (
     siteId: string,
