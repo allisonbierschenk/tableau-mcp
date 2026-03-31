@@ -42,7 +42,7 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
         url,
       });
       return await (this._apiClient as any).addUserToSite(body, {
-        siteId,
+        params: { siteId },
         ...this.authHeader,
       });
     })();
@@ -125,11 +125,11 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     siteId: string,
     queries?: PagingQuery & { filter?: string; sort?: string; fields?: string },
   ): Promise<unknown> =>
-    await this._apiClient.getUsersOnSite({
+    await (this._apiClient as any).getUsersOnSite(undefined, {
       params: { siteId },
       queries,
       ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.getUsersOnSite>[0]);
+    });
 
   importUsersToSiteFromCsv = async (
     siteId: string,
@@ -183,11 +183,11 @@ export default class AdminMethods extends AuthenticatedMethods<typeof adminApis>
     userId: string,
     queries?: { mapAssetsTo?: string },
   ): Promise<unknown> =>
-    await this._apiClient.removeUserFromSite({
+    await (this._apiClient as any).removeUserFromSite(undefined, {
       params: { siteId, userId },
       queries,
       ...this.authHeader,
-    } as unknown as Parameters<typeof this._apiClient.removeUserFromSite>[0]);
+    });
 
   removeUserFromGroup = async (siteId: string, groupId: string, userId: string): Promise<unknown> =>
     await this._apiClient.removeUserFromGroup({
