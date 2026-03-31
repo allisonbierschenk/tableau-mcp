@@ -4,6 +4,26 @@ import { z } from 'zod';
 import { paginationParameters } from './paginationParameters.js';
 
 const anyResponse = z.any();
+const siteIdPathParameter = {
+  name: 'siteId',
+  type: 'Path' as const,
+  schema: z.string(),
+};
+const groupIdPathParameter = {
+  name: 'groupId',
+  type: 'Path' as const,
+  schema: z.string(),
+};
+const groupSetIdPathParameter = {
+  name: 'groupSetId',
+  type: 'Path' as const,
+  schema: z.string(),
+};
+const userIdPathParameter = {
+  name: 'userId',
+  type: 'Path' as const,
+  schema: z.string(),
+};
 
 const adminApi = makeApi([
   makeEndpoint({
@@ -11,6 +31,7 @@ const adminApi = makeApi([
     path: '/sites/:siteId/groupsets/:groupSetId/groups/:groupId',
     alias: 'addGroupToGroupSet',
     description: 'Adds group to a group set.',
+    parameters: [siteIdPathParameter, groupSetIdPathParameter, groupIdPathParameter],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -18,7 +39,11 @@ const adminApi = makeApi([
     path: '/sites/:siteId/groups/:groupId/users',
     alias: 'addUserToGroup',
     description: 'Adds one or more users to a group.',
-    parameters: [{ name: 'Body', type: 'Body', schema: z.any() }],
+    parameters: [
+      siteIdPathParameter,
+      groupIdPathParameter,
+      { name: 'body', type: 'Body', schema: z.any() },
+    ],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -26,7 +51,7 @@ const adminApi = makeApi([
     path: '/sites/:siteId/users',
     alias: 'addUserToSite',
     description: 'Adds a user to a site.',
-    parameters: [{ name: 'Body', type: 'Body', schema: z.any() }],
+    parameters: [siteIdPathParameter, { name: 'body', type: 'Body', schema: z.any() }],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -35,12 +60,13 @@ const adminApi = makeApi([
     alias: 'createGroup',
     description: 'Creates a group on a site.',
     parameters: [
+      siteIdPathParameter,
       {
         name: 'asJob',
         type: 'Query',
         schema: z.boolean().optional(),
       },
-      { name: 'Body', type: 'Body', schema: z.any() },
+      { name: 'body', type: 'Body', schema: z.any() },
     ],
     response: anyResponse,
   }),
@@ -49,7 +75,7 @@ const adminApi = makeApi([
     path: '/sites/:siteId/groupsets',
     alias: 'createGroupSet',
     description: 'Creates a group set.',
-    parameters: [{ name: 'Body', type: 'Body', schema: z.any() }],
+    parameters: [siteIdPathParameter, { name: 'body', type: 'Body', schema: z.any() }],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -57,6 +83,7 @@ const adminApi = makeApi([
     path: '/sites/:siteId/groups/:groupId',
     alias: 'deleteGroup',
     description: 'Deletes a group.',
+    parameters: [siteIdPathParameter, groupIdPathParameter],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -64,6 +91,7 @@ const adminApi = makeApi([
     path: '/sites/:siteId/groupsets/:groupSetId',
     alias: 'deleteGroupSet',
     description: 'Deletes a group set.',
+    parameters: [siteIdPathParameter, groupSetIdPathParameter],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -71,7 +99,7 @@ const adminApi = makeApi([
     path: '/sites/:siteId/users/delete',
     alias: 'deleteUsersFromSiteWithCsv',
     description: 'Deletes users from site via CSV multipart upload.',
-    parameters: [{ name: 'Body', type: 'Body', schema: z.any() }],
+    parameters: [siteIdPathParameter, { name: 'body', type: 'Body', schema: z.any() }],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -79,7 +107,11 @@ const adminApi = makeApi([
     path: '/sites/:siteId/users/:userId/retrieveSavedCreds',
     alias: 'downloadUserCredentials',
     description: 'Downloads user credentials for migration.',
-    parameters: [{ name: 'Body', type: 'Body', schema: z.any() }],
+    parameters: [
+      siteIdPathParameter,
+      userIdPathParameter,
+      { name: 'body', type: 'Body', schema: z.any() },
+    ],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -87,7 +119,7 @@ const adminApi = makeApi([
     path: '/sites/:siteId/users/:userId/groups',
     alias: 'getGroupsForUser',
     description: 'Gets groups for a user.',
-    parameters: [...paginationParameters],
+    parameters: [siteIdPathParameter, userIdPathParameter, ...paginationParameters],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -102,7 +134,7 @@ const adminApi = makeApi([
     path: '/sites/:siteId/groups/:groupId/users',
     alias: 'getUsersInGroup',
     description: 'Gets users in a group.',
-    parameters: [...paginationParameters],
+    parameters: [siteIdPathParameter, groupIdPathParameter, ...paginationParameters],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -111,6 +143,7 @@ const adminApi = makeApi([
     alias: 'getUsersOnSite',
     description: 'Gets users on a site.',
     parameters: [
+      siteIdPathParameter,
       ...paginationParameters,
       { name: 'filter', type: 'Query', schema: z.string().optional() },
       { name: 'sort', type: 'Query', schema: z.string().optional() },
@@ -124,8 +157,9 @@ const adminApi = makeApi([
     alias: 'importUsersToSiteFromCsv',
     description: 'Imports users to site from CSV multipart upload.',
     parameters: [
+      siteIdPathParameter,
       { name: 'isVerbose', type: 'Query', schema: z.boolean().optional() },
-      { name: 'Body', type: 'Body', schema: z.any() },
+      { name: 'body', type: 'Body', schema: z.any() },
     ],
     response: anyResponse,
   }),
@@ -135,6 +169,7 @@ const adminApi = makeApi([
     alias: 'listGroupSets',
     description: 'Lists group sets.',
     parameters: [
+      siteIdPathParameter,
       ...paginationParameters,
       { name: 'filter', type: 'Query', schema: z.string().optional() },
       { name: 'sort', type: 'Query', schema: z.string().optional() },
@@ -147,6 +182,7 @@ const adminApi = makeApi([
     alias: 'queryGroups',
     description: 'Queries groups.',
     parameters: [
+      siteIdPathParameter,
       ...paginationParameters,
       { name: 'filter', type: 'Query', schema: z.string().optional() },
       { name: 'sort', type: 'Query', schema: z.string().optional() },
@@ -158,6 +194,7 @@ const adminApi = makeApi([
     path: '/sites/:siteId/users/:userId',
     alias: 'queryUserOnSite',
     description: 'Queries a user on site.',
+    parameters: [siteIdPathParameter, userIdPathParameter],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -165,6 +202,7 @@ const adminApi = makeApi([
     path: '/sites/:siteId/groupsets/:groupSetId/groups/:groupId',
     alias: 'removeGroupFromGroupSet',
     description: 'Removes a group from group set.',
+    parameters: [siteIdPathParameter, groupSetIdPathParameter, groupIdPathParameter],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -172,7 +210,11 @@ const adminApi = makeApi([
     path: '/sites/:siteId/users/:userId',
     alias: 'removeUserFromSite',
     description: 'Removes user from site.',
-    parameters: [{ name: 'mapAssetsTo', type: 'Query', schema: z.string().optional() }],
+    parameters: [
+      siteIdPathParameter,
+      userIdPathParameter,
+      { name: 'mapAssetsTo', type: 'Query', schema: z.string().optional() },
+    ],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -180,6 +222,7 @@ const adminApi = makeApi([
     path: '/sites/:siteId/groups/:groupId/users/:userId',
     alias: 'removeUserFromGroup',
     description: 'Removes one user from group.',
+    parameters: [siteIdPathParameter, groupIdPathParameter, userIdPathParameter],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -187,7 +230,11 @@ const adminApi = makeApi([
     path: '/sites/:siteId/groups/:groupId/users/remove',
     alias: 'bulkRemoveUsersFromGroup',
     description: 'Bulk removes users from group.',
-    parameters: [{ name: 'Body', type: 'Body', schema: z.any() }],
+    parameters: [
+      siteIdPathParameter,
+      groupIdPathParameter,
+      { name: 'body', type: 'Body', schema: z.any() },
+    ],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -196,8 +243,10 @@ const adminApi = makeApi([
     alias: 'updateGroup',
     description: 'Updates a group.',
     parameters: [
+      siteIdPathParameter,
+      groupIdPathParameter,
       { name: 'asJob', type: 'Query', schema: z.boolean().optional() },
-      { name: 'Body', type: 'Body', schema: z.any() },
+      { name: 'body', type: 'Body', schema: z.any() },
     ],
     response: anyResponse,
   }),
@@ -206,7 +255,11 @@ const adminApi = makeApi([
     path: '/sites/:siteId/groupsets/:groupSetId',
     alias: 'updateGroupSet',
     description: 'Updates a group set.',
-    parameters: [{ name: 'Body', type: 'Body', schema: z.any() }],
+    parameters: [
+      siteIdPathParameter,
+      groupSetIdPathParameter,
+      { name: 'body', type: 'Body', schema: z.any() },
+    ],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -214,7 +267,11 @@ const adminApi = makeApi([
     path: '/sites/:siteId/users/:userId',
     alias: 'updateUser',
     description: 'Updates a user.',
-    parameters: [{ name: 'Body', type: 'Body', schema: z.any() }],
+    parameters: [
+      siteIdPathParameter,
+      userIdPathParameter,
+      { name: 'body', type: 'Body', schema: z.any() },
+    ],
     response: anyResponse,
   }),
   makeEndpoint({
@@ -222,7 +279,11 @@ const adminApi = makeApi([
     path: '/sites/:siteId/users/:userId/uploadSavedCreds',
     alias: 'uploadUserCredentials',
     description: 'Uploads user credentials to destination site.',
-    parameters: [{ name: 'Body', type: 'Body', schema: z.any() }],
+    parameters: [
+      siteIdPathParameter,
+      userIdPathParameter,
+      { name: 'body', type: 'Body', schema: z.any() },
+    ],
     response: anyResponse,
   }),
 ]);
