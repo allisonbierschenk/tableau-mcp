@@ -59,7 +59,10 @@ const graphqlEndpoint = makeEndpoint({
   method: 'post',
   path: '/graphql',
   alias: 'graphql',
-  response: graphqlResponse,
+  /** Responses vary by query; callers validate the shape they need. */
+  response: z
+    .object({ data: z.any().optional(), errors: z.array(z.any()).nullish() })
+    .passthrough(),
   parameters: [
     {
       name: 'query',

@@ -75,4 +75,44 @@ export default class WorkbooksMethods extends AuthenticatedMethods<typeof workbo
       workbooks: response.workbooks.workbook ?? [],
     };
   };
+
+  /**
+   * Downloads workbook file (.twbx) bytes.
+   *
+   * @link https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_ref_workbooks_and_views.htm
+   */
+  downloadWorkbookContent = async ({
+    siteId,
+    workbookId,
+  }: {
+    siteId: string;
+    workbookId: string;
+  }): Promise<ArrayBuffer> => {
+    const response = await this._apiClient.axios.get<ArrayBuffer>(
+      `/sites/${siteId}/workbooks/${workbookId}/content`,
+      {
+        ...this.authHeader,
+        responseType: 'arraybuffer',
+      },
+    );
+    return response.data;
+  };
+
+  /** Full workbook JSON including fields not modeled in {@link workbookSchema} (e.g. contentPermissions). */
+  getWorkbookRaw = async ({
+    siteId,
+    workbookId,
+  }: {
+    siteId: string;
+    workbookId: string;
+  }): Promise<unknown> => {
+    const response = await this._apiClient.axios.get(`/sites/${siteId}/workbooks/${workbookId}`, {
+      ...this.authHeader,
+      headers: {
+        ...this.authHeader.headers,
+        Accept: 'application/json',
+      },
+    });
+    return response.data;
+  };
 }

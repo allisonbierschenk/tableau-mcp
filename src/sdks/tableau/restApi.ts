@@ -16,7 +16,9 @@ import {
 } from './methods/authenticationMethods.js';
 import ContentExplorationMethods from './methods/contentExplorationMethods.js';
 import DatasourcesMethods from './methods/datasourcesMethods.js';
+import JobsMethods from './methods/jobsMethods.js';
 import MetadataMethods from './methods/metadataMethods.js';
+import PermissionsMethods from './methods/permissionsMethods.js';
 import PulseMethods from './methods/pulseMethods.js';
 import { AuthenticatedServerMethods, ServerMethods } from './methods/serverMethods.js';
 import ViewsMethods from './methods/viewsMethods.js';
@@ -43,7 +45,9 @@ export class RestApi {
   private _adminMethods?: AdminMethods;
   private _contentExplorationMethods?: ContentExplorationMethods;
   private _datasourcesMethods?: DatasourcesMethods;
+  private _jobsMethods?: JobsMethods;
   private _metadataMethods?: MetadataMethods;
+  private _permissionsMethods?: PermissionsMethods;
   private _pulseMethods?: PulseMethods;
   private _serverMethods?: ServerMethods;
   private _vizqlDataServiceMethods?: VizqlDataServiceMethods;
@@ -162,6 +166,28 @@ export class RestApi {
     }
 
     return this._datasourcesMethods;
+  }
+
+  get jobsMethods(): JobsMethods {
+    if (!this._jobsMethods) {
+      this._jobsMethods = new JobsMethods(this._baseUrl, this.creds, {
+        timeout: this._maxRequestTimeoutMs,
+        signal: this._signal,
+      });
+      this._addInterceptors(this._baseUrl, this._jobsMethods.interceptors);
+    }
+    return this._jobsMethods;
+  }
+
+  get permissionsMethods(): PermissionsMethods {
+    if (!this._permissionsMethods) {
+      this._permissionsMethods = new PermissionsMethods(this._baseUrl, this.creds, {
+        timeout: this._maxRequestTimeoutMs,
+        signal: this._signal,
+      });
+      this._addInterceptors(this._baseUrl, this._permissionsMethods.interceptors);
+    }
+    return this._permissionsMethods;
   }
 
   get metadataMethods(): MetadataMethods {

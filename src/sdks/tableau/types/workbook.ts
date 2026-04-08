@@ -4,21 +4,32 @@ import { projectSchema } from './project.js';
 import { tagsSchema } from './tags.js';
 import { viewSchema } from './view.js';
 
-export const workbookSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  webpageUrl: z.string().optional(),
-  contentUrl: z.string(),
-  project: projectSchema.optional(),
-  showTabs: z.coerce.boolean(),
-  defaultViewId: z.string().optional(),
-  tags: tagsSchema,
-  views: z.optional(
-    z.object({
-      view: z.array(viewSchema),
-    }),
-  ),
-});
+export const workbookSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    description: z.string().optional(),
+    webpageUrl: z.string().optional(),
+    contentUrl: z.string(),
+    project: projectSchema.optional(),
+    showTabs: z.coerce.boolean(),
+    defaultViewId: z.string().optional(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
+    owner: z
+      .object({
+        id: z.string().optional(),
+      })
+      .passthrough()
+      .optional(),
+    contentPermissions: z.unknown().optional(),
+    tags: tagsSchema,
+    views: z.optional(
+      z.object({
+        view: z.array(viewSchema),
+      }),
+    ),
+  })
+  .passthrough();
 
 export type Workbook = z.infer<typeof workbookSchema>;

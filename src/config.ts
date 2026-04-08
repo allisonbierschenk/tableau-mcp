@@ -76,6 +76,18 @@ export class Config {
   /** HTTP header (lowercase) carrying Tableau username for JWT when MCP OAuth is off; empty = disabled */
   jwtSubClaimRequestHeaderName: string;
 
+  /** Defaults for `tableau-operations` tool (overridable per tool call). */
+  tableauOpsRunningThresholdMinutes: number;
+  tableauOpsStaleDays: number;
+  tableauOpsOverlapWindowMs: number;
+  /** When true, `get-background-job-conflicts` calls Metadata API for workbook upstream context. */
+  tableauOpsEnrichJobConflictsWithMetadata: boolean;
+
+  /** Optional S3 archive for `archive-workbook` (uses default AWS credential provider chain). */
+  tableauArchiveS3Bucket: string;
+  tableauArchiveS3Prefix: string;
+  tableauArchiveAwsRegion: string;
+
   constructor() {
     const cleansedVars = removeClaudeMcpBundleUserConfigTemplates(process.env);
     const {
@@ -130,6 +142,13 @@ export class Config {
       PRODUCT_TELEMETRY_ENABLED: productTelemetryEnabled,
       IS_HYPERFORCE: isHyperforce,
       JWT_SUB_CLAIM_HEADER: jwtSubClaimHeader,
+      TABLEAU_OPS_RUNNING_THRESHOLD_MINUTES: tableauOpsRunningThresholdMinutes,
+      TABLEAU_OPS_STALE_DAYS: tableauOpsStaleDays,
+      TABLEAU_OPS_OVERLAP_WINDOW_MS: tableauOpsOverlapWindowMs,
+      TABLEAU_OPS_ENRICH_JOB_CONFLICTS_METADATA: tableauOpsEnrichJobConflictsMetadata,
+      TABLEAU_ARCHIVE_S3_BUCKET: tableauArchiveS3Bucket,
+      TABLEAU_ARCHIVE_S3_PREFIX: tableauArchiveS3Prefix,
+      TABLEAU_ARCHIVE_AWS_REGION: tableauArchiveAwsRegion,
     } = cleansedVars;
 
     let jwtUsername = '';
@@ -351,6 +370,30 @@ export class Config {
       uatPrivateKey || (uatPrivateKeyPath ? readFileSync(uatPrivateKeyPath, 'utf8') : '');
     this.uatKeyId = uatKeyId ?? '';
     this.jwtAdditionalPayload = jwtAdditionalPayload || '{}';
+
+    this.tableauOpsRunningThresholdMinutes = parseNumber(tableauOpsRunningThresholdMinutes, {
+      defaultValue: 45,
+      minValue: 1,
+      maxValue: 24 * 60,
+    });
+    this.tableauOpsStaleDays = parseNumber(tableauOpsStaleDays, {
+      defaultValue: 365,
+      minValue: 1,
+      maxValue: 3650,
+    });
+    this.tableauOpsOverlapWindowMs = parseNumber(tableauOpsOverlapWindowMs, {
+      defaultValue: 120_000,
+      minValue: 1000,
+      maxValue: 3_600_000,
+    });
+    this.tableauOpsEnrichJobConflictsWithMetadata =
+      tableauOpsEnrichJobConflictsMetadata !== 'false';
+
+    this.tableauArchiveS3Bucket = tableauArchiveS3Bucket?.trim() ?? '';
+    this.tableauArchiveS3Prefix = (
+      tableauArchiveS3Prefix?.trim() || 'tableau-mcp-archives'
+    ).replace(/^\/+|\/+$/g, '');
+    this.tableauArchiveAwsRegion = tableauArchiveAwsRegion?.trim() ?? '';
   }
 }
 

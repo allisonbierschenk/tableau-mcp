@@ -31,7 +31,14 @@ type JwtScopes =
   | 'tableau:insights:read'
   | 'tableau:views:download'
   | 'tableau:insight_brief:create'
-  | 'tableau:mcp_site_settings:read';
+  | 'tableau:mcp_site_settings:read'
+  | 'tableau:permissions:read'
+  | 'tableau:permissions:update'
+  | 'tableau:permissions:delete'
+  | 'tableau:jobs:read'
+  | 'tableau:jobs:update'
+  | 'tableau:users:read'
+  | 'tableau:groups:read';
 
 export type RestApiArgs = Pick<
   TableauRequestHandlerExtra,
@@ -283,7 +290,9 @@ function getUserAgent(server: Server): string {
   return userAgentParts.join(' ');
 }
 
-function resolveTableauAuthForJwt(authInfo: TableauAuthInfo | undefined): TableauAuthInfo | undefined {
+function resolveTableauAuthForJwt(
+  authInfo: TableauAuthInfo | undefined,
+): TableauAuthInfo | undefined {
   const fromRequest = getTableauAuthInfoFromRequestContext();
   const u = fromRequest?.username;
   if (u != null && String(u).trim() !== '') {
