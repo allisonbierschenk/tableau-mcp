@@ -22,9 +22,11 @@ import { isAxiosError } from './utils/axios.js';
 import { getExceptionMessage } from './utils/getExceptionMessage.js';
 import invariant from './utils/invariant.js';
 
-type JwtScopes =
+export type JwtScopes =
   | 'tableau:viz_data_service:read'
   | 'tableau:content:read'
+  | 'tableau:content:update'
+  | 'tableau:content:delete'
   | 'tableau:insight_definitions_metrics:read'
   | 'tableau:insight_metrics:read'
   | 'tableau:metric_subscriptions:read'

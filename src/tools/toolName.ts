@@ -2,16 +2,20 @@ export const toolNames = [
   'admin-users',
   'admin-groups',
   'content-permissions',
+  'content-projects',
+  'content-workbooks',
+  'content-views',
   'site-jobs',
   'tableau-operations',
 ] as const;
 export type ToolName = (typeof toolNames)[number];
 
-export const toolGroupNames = ['admin', 'operations'] as const;
+export const toolGroupNames = ['admin', 'content', 'operations'] as const;
 export type ToolGroupName = (typeof toolGroupNames)[number];
 
 export const toolGroups = {
   admin: ['admin-users', 'admin-groups'],
+  content: ['content-projects', 'content-workbooks', 'content-views'],
   operations: ['content-permissions', 'site-jobs', 'tableau-operations'],
 } as const satisfies Record<ToolGroupName, Array<ToolName>>;
 

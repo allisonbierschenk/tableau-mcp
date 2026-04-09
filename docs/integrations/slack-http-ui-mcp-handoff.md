@@ -47,13 +47,13 @@ flowchart LR
 
 ## 3. MCP HTTP endpoint
 
-- **URL pattern**: `https://<mcp-host>/<serverName>` where `serverName` is `tableau-mcp` (see [`src/server.ts`](../../src/server.ts) `serverName`).
+- **URL pattern**: `https://<mcp-host>/<serverName>` where `serverName` is `tableau-mcp` (see [`src/server.ts`](https://github.com/tableau/tableau-mcp/blob/main/src/server.ts) `serverName`).
 - **Example**: `https://your-railway-app.example/tableau-mcp`
 - **Protocol**: MCP **Streamable HTTP** — JSON-RPC messages over `POST` (and related MCP streaming semantics). Use an MCP client library that supports this transport, or follow the same request sequence as the MCP spec / Inspector.
 
 **Official docs in this repo**
 
-- [HTTP Server configuration](../docs/configuration/mcp-config/http-server.md) (Docusaurus path may vary if you browse the site; in-repo: `docs/docs/configuration/mcp-config/http-server.md`).
+- [HTTP Server configuration](../docs/configuration/mcp-config/http-server.md).
 - [Dynamic user / per-request Tableau username](../docs/developers/dynamic-user-mcp-handoff.md) — critical for mapping **Slack user → Tableau user**.
 
 ---
@@ -84,7 +84,7 @@ When the MCP server is configured with:
 
 **Security**: Anyone who can hit the MCP URL can impersonate any username unless you **restrict network access** (VPN, private link, mTLS, or a gateway that injects the header after Slack auth).
 
-Details: [`docs/docs/developers/dynamic-user-mcp-handoff.md`](../docs/developers/dynamic-user-mcp-handoff.md).
+Details: [dynamic-user-mcp-handoff.md](../docs/developers/dynamic-user-mcp-handoff.md).
 
 ### 4.3 Tableau token scopes (Connected App / UAT)
 
@@ -176,7 +176,7 @@ You are **not** calling Tableau URLs directly; you send MCP **`tools/call`** (or
 
 ## 8. Operational notes
 
-- **PAT + HTTP + many concurrent Slack users**: avoid; PAT sessions conflict. Prefer **Connected App direct-trust** or **UAT** per Tableau guidance in [http-server.md](../docs/configuration/mcp-config/http-server.md).
+- **PAT + HTTP + many concurrent Slack users**: avoid; PAT sessions conflict. Prefer **Connected App direct-trust** or **UAT** per Tableau guidance in [http-server.md](../docs/configuration/mcp-config/http-server.md) (`docs/docs/configuration/mcp-config/http-server.md`).
 - **Large responses**: permission and user lists can be huge — page in Tableau via tool args where supported, or summarize in the Slack layer.
 - **`archive-workbook`**: may return S3 metadata (when configured on MCP) or base64 for small `.twbx` files — do not post base64 into public channels.
 
@@ -197,14 +197,14 @@ You are **not** calling Tableau URLs directly; you send MCP **`tools/call`** (or
 
 | Area | Path |
 |------|------|
-| Tool names / groups | `src/tools/toolName.ts` |
-| Tool factories | `src/tools/tools.ts` |
-| HTTP entry | `src/server/express.ts`, `src/index.ts` |
-| JWT scopes | `src/restApiInstance.ts` |
-| Per-request username header | `src/server/jwtSubClaimHeaderMiddleware.ts` |
-| Permissions SDK | `src/sdks/tableau/methods/permissionsMethods.ts` |
-| Jobs SDK | `src/sdks/tableau/methods/jobsMethods.ts` |
-| Composite ops | `src/tools/operations/tableauOperations.ts` |
+| Tool names / groups | [`src/tools/toolName.ts`](../../src/tools/toolName.ts) |
+| Tool factories | [`src/tools/tools.ts`](../../src/tools/tools.ts) |
+| HTTP entry | [`src/server/express.ts`](../../src/server/express.ts), [`src/index.ts`](../../src/index.ts) |
+| JWT scopes | [`src/restApiInstance.ts`](../../src/restApiInstance.ts) |
+| Per-request username header | [`src/server/jwtSubClaimHeaderMiddleware.ts`](../../src/server/jwtSubClaimHeaderMiddleware.ts) |
+| Permissions SDK | [`src/sdks/tableau/methods/permissionsMethods.ts`](../../src/sdks/tableau/methods/permissionsMethods.ts) |
+| Jobs SDK | [`src/sdks/tableau/methods/jobsMethods.ts`](../../src/sdks/tableau/methods/jobsMethods.ts) |
+| Composite ops | [`src/tools/operations/tableauOperations.ts`](../../src/tools/operations/tableauOperations.ts) |
 
 ---
 

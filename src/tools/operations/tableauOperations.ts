@@ -429,7 +429,6 @@ async function opStaleReport(
   for (;;) {
     const batch = await restApi.workbooksMethods.queryWorkbooksForSite({
       siteId,
-      filter: '',
       pageSize,
       pageNumber: page,
     });

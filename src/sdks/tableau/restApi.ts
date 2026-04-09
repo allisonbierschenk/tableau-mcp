@@ -19,6 +19,7 @@ import DatasourcesMethods from './methods/datasourcesMethods.js';
 import JobsMethods from './methods/jobsMethods.js';
 import MetadataMethods from './methods/metadataMethods.js';
 import PermissionsMethods from './methods/permissionsMethods.js';
+import ProjectsMethods from './methods/projectsMethods.js';
 import PulseMethods from './methods/pulseMethods.js';
 import { AuthenticatedServerMethods, ServerMethods } from './methods/serverMethods.js';
 import ViewsMethods from './methods/viewsMethods.js';
@@ -48,6 +49,7 @@ export class RestApi {
   private _jobsMethods?: JobsMethods;
   private _metadataMethods?: MetadataMethods;
   private _permissionsMethods?: PermissionsMethods;
+  private _projectsMethods?: ProjectsMethods;
   private _pulseMethods?: PulseMethods;
   private _serverMethods?: ServerMethods;
   private _vizqlDataServiceMethods?: VizqlDataServiceMethods;
@@ -188,6 +190,17 @@ export class RestApi {
       this._addInterceptors(this._baseUrl, this._permissionsMethods.interceptors);
     }
     return this._permissionsMethods;
+  }
+
+  get projectsMethods(): ProjectsMethods {
+    if (!this._projectsMethods) {
+      this._projectsMethods = new ProjectsMethods(this._baseUrl, this.creds, {
+        timeout: this._maxRequestTimeoutMs,
+        signal: this._signal,
+      });
+      this._addInterceptors(this._baseUrl, this._projectsMethods.interceptors);
+    }
+    return this._projectsMethods;
   }
 
   get metadataMethods(): MetadataMethods {
