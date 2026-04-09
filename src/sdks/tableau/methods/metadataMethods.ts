@@ -1,7 +1,7 @@
 import { Zodios } from '@zodios/core';
 
 import { AxiosRequestConfig } from '../../../utils/axios.js';
-import { GraphQLResponse, metadataApis } from '../apis/metadataApi.js';
+import { metadataApis } from '../apis/metadataApi.js';
 import { Credentials } from '../types/credentials.js';
 import AuthenticatedMethods from './authenticatedMethods.js';
 
@@ -25,7 +25,7 @@ export default class MetadataMethods extends AuthenticatedMethods<typeof metadat
    * @param {string} query
    * @link https://help.tableau.com/current/api/metadata_api/en-us/index.html
    */
-  graphql = async (query: string): Promise<GraphQLResponse> => {
+  graphql = async (query: string): Promise<unknown> => {
     return await this._apiClient.graphql({ query }, { ...this.authHeader });
   };
 }

@@ -90,6 +90,18 @@ const queryViewsForSiteEndpoint = makeEndpoint({
       description:
         'An expression that lets you specify a subset of views to return. You can filter on predefined fields such as name, tags, and createdAt. You can include multiple filter expressions.',
     },
+    {
+      name: 'sort',
+      type: 'Query',
+      schema: z.string().optional(),
+      description: 'Sort expression for the result set.',
+    },
+    {
+      name: 'fields',
+      type: 'Query',
+      schema: z.string().optional(),
+      description: 'Comma-separated list of fields to include in the response.',
+    },
   ],
   response: z.object({
     pagination: paginationSchema,

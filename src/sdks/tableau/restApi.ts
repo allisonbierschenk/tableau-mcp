@@ -1,3 +1,4 @@
+import { isAxiosError } from '../../utils/axios.js';
 import { getSiteLuidFromAccessToken } from '../../utils/getSiteLuidFromAccessToken.js';
 import { AuthConfig } from './authConfig.js';
 import {
@@ -8,13 +9,17 @@ import {
   RequestInterceptor,
   ResponseInterceptor,
 } from './interceptors.js';
+import AdminMethods from './methods/adminMethods.js';
 import {
   AuthenticatedAuthenticationMethods,
   AuthenticationMethods,
 } from './methods/authenticationMethods.js';
 import ContentExplorationMethods from './methods/contentExplorationMethods.js';
 import DatasourcesMethods from './methods/datasourcesMethods.js';
+import JobsMethods from './methods/jobsMethods.js';
 import MetadataMethods from './methods/metadataMethods.js';
+import PermissionsMethods from './methods/permissionsMethods.js';
+import ProjectsMethods from './methods/projectsMethods.js';
 import PulseMethods from './methods/pulseMethods.js';
 import { AuthenticatedServerMethods, ServerMethods } from './methods/serverMethods.js';
 import ViewsMethods from './methods/viewsMethods.js';
@@ -38,9 +43,13 @@ export class RestApi {
   private _authenticationMethods?: AuthenticationMethods;
   private _authenticatedAuthenticationMethods?: AuthenticatedAuthenticationMethods;
   private _authenticatedServerMethods?: AuthenticatedServerMethods;
+  private _adminMethods?: AdminMethods;
   private _contentExplorationMethods?: ContentExplorationMethods;
   private _datasourcesMethods?: DatasourcesMethods;
+  private _jobsMethods?: JobsMethods;
   private _metadataMethods?: MetadataMethods;
+  private _permissionsMethods?: PermissionsMethods;
+  private _projectsMethods?: ProjectsMethods;
   private _pulseMethods?: PulseMethods;
   private _serverMethods?: ServerMethods;
   private _vizqlDataServiceMethods?: VizqlDataServiceMethods;
@@ -119,6 +128,17 @@ export class RestApi {
     return this._authenticatedServerMethods;
   }
 
+  get adminMethods(): AdminMethods {
+    if (!this._adminMethods) {
+      this._adminMethods = new AdminMethods(this._baseUrl, this.creds, {
+        timeout: this._maxRequestTimeoutMs,
+        signal: this._signal,
+      });
+      this._addInterceptors(this._baseUrl, this._adminMethods.interceptors);
+    }
+    return this._adminMethods;
+  }
+
   get contentExplorationMethods(): ContentExplorationMethods {
     if (!this._contentExplorationMethods) {
       this._contentExplorationMethods = new ContentExplorationMethods(
@@ -148,6 +168,39 @@ export class RestApi {
     }
 
     return this._datasourcesMethods;
+  }
+
+  get jobsMethods(): JobsMethods {
+    if (!this._jobsMethods) {
+      this._jobsMethods = new JobsMethods(this._baseUrl, this.creds, {
+        timeout: this._maxRequestTimeoutMs,
+        signal: this._signal,
+      });
+      this._addInterceptors(this._baseUrl, this._jobsMethods.interceptors);
+    }
+    return this._jobsMethods;
+  }
+
+  get permissionsMethods(): PermissionsMethods {
+    if (!this._permissionsMethods) {
+      this._permissionsMethods = new PermissionsMethods(this._baseUrl, this.creds, {
+        timeout: this._maxRequestTimeoutMs,
+        signal: this._signal,
+      });
+      this._addInterceptors(this._baseUrl, this._permissionsMethods.interceptors);
+    }
+    return this._permissionsMethods;
+  }
+
+  get projectsMethods(): ProjectsMethods {
+    if (!this._projectsMethods) {
+      this._projectsMethods = new ProjectsMethods(this._baseUrl, this.creds, {
+        timeout: this._maxRequestTimeoutMs,
+        signal: this._signal,
+      });
+      this._addInterceptors(this._baseUrl, this._projectsMethods.interceptors);
+    }
+    return this._projectsMethods;
   }
 
   get metadataMethods(): MetadataMethods {
@@ -287,6 +340,20 @@ export class RestApi {
         return response;
       },
       (error) => {
+        if (isAxiosError(error)) {
+          const method = error.config?.method?.toUpperCase() ?? 'UNKNOWN';
+          const requestUrl = error.config?.url ?? 'UNKNOWN_URL';
+          const status = error.response?.status ?? 'NO_STATUS';
+          const responseData = error.response?.data ?? 'NO_RESPONSE_BODY';
+          // Diagnostic logging to debug upstream Tableau 404s and other failures.
+          console.error('Tableau API request failed:', {
+            baseUrl,
+            method,
+            requestUrl,
+            status,
+            responseData,
+          });
+        }
         this._responseInterceptor?.[1]?.(error, baseUrl);
         return Promise.reject(error);
       },

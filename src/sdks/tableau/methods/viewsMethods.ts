@@ -131,23 +131,81 @@ export default class ViewsMethods extends AuthenticatedMethods<typeof viewsApis>
     siteId,
     includeUsageStatistics,
     filter,
+    sort,
+    fields,
     pageSize,
     pageNumber,
   }: {
     siteId: string;
     includeUsageStatistics?: boolean;
-    filter: string;
+    filter?: string;
+    sort?: string;
+    fields?: string;
     pageSize?: number;
     pageNumber?: number;
   }): Promise<{ pagination: Pagination; views: View[] }> => {
     const response = await this._apiClient.queryViewsForSite({
       params: { siteId },
-      queries: { includeUsageStatistics, filter, pageSize, pageNumber },
+      queries: { includeUsageStatistics, filter, sort, fields, pageSize, pageNumber },
       ...this.authHeader,
     });
     return {
       pagination: response.pagination,
       views: response.views.view ?? [],
     };
+  };
+
+  /**
+   * Returns a PDF of the specified view.
+   *
+   * Required scopes: `tableau:views:download`
+   *
+   * @link https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_ref_workbooks_and_views.htm#query_view_pdf
+   */
+  queryViewPdf = async ({
+    siteId,
+    viewId,
+    queries,
+  }: {
+    siteId: string;
+    viewId: string;
+    queries?: Record<string, string | number | boolean | undefined>;
+  }): Promise<ArrayBuffer> => {
+    const response = await this._apiClient.axios.get<ArrayBuffer>(
+      `/sites/${siteId}/views/${viewId}/pdf`,
+      {
+        ...this.authHeader,
+        params: queries,
+        responseType: 'arraybuffer',
+      },
+    );
+    return response.data;
+  };
+
+  /**
+   * Downloads crosstab data for a view as an Excel (.xlsx) file.
+   *
+   * Required scopes: `tableau:views:download`
+   *
+   * @link https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_ref_workbooks_and_views.htm
+   */
+  downloadViewCrosstabExcel = async ({
+    siteId,
+    viewId,
+    queries,
+  }: {
+    siteId: string;
+    viewId: string;
+    queries?: Record<string, string | number | boolean | undefined>;
+  }): Promise<ArrayBuffer> => {
+    const response = await this._apiClient.axios.get<ArrayBuffer>(
+      `/sites/${siteId}/views/${viewId}/crosstab/excel`,
+      {
+        ...this.authHeader,
+        params: queries,
+        responseType: 'arraybuffer',
+      },
+    );
+    return response.data;
   };
 }

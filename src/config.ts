@@ -6,6 +6,7 @@ import { isTelemetryProvider, providerConfigSchema, TelemetryConfig } from './te
 import { isTransport, TransportName } from './transports.js';
 import { getDirname } from './utils/getDirname.js';
 import invariant from './utils/invariant.js';
+import { isSafeHttpHeaderName } from './utils/safeHttpHeaderName.js';
 
 const __dirname = getDirname();
 
@@ -72,6 +73,20 @@ export class Config {
   productTelemetryEndpoint: string;
   productTelemetryEnabled: boolean;
   isHyperforce: boolean;
+  /** HTTP header (lowercase) carrying Tableau username for JWT when MCP OAuth is off; empty = disabled */
+  jwtSubClaimRequestHeaderName: string;
+
+  /** Defaults for `tableau-operations` tool (overridable per tool call). */
+  tableauOpsRunningThresholdMinutes: number;
+  tableauOpsStaleDays: number;
+  tableauOpsOverlapWindowMs: number;
+  /** When true, `get-background-job-conflicts` calls Metadata API for workbook upstream context. */
+  tableauOpsEnrichJobConflictsWithMetadata: boolean;
+
+  /** Optional S3 archive for `archive-workbook` (uses default AWS credential provider chain). */
+  tableauArchiveS3Bucket: string;
+  tableauArchiveS3Prefix: string;
+  tableauArchiveAwsRegion: string;
 
   constructor() {
     const cleansedVars = removeClaudeMcpBundleUserConfigTemplates(process.env);
@@ -126,6 +141,14 @@ export class Config {
       PRODUCT_TELEMETRY_ENDPOINT: productTelemetryEndpoint,
       PRODUCT_TELEMETRY_ENABLED: productTelemetryEnabled,
       IS_HYPERFORCE: isHyperforce,
+      JWT_SUB_CLAIM_HEADER: jwtSubClaimHeader,
+      TABLEAU_OPS_RUNNING_THRESHOLD_MINUTES: tableauOpsRunningThresholdMinutes,
+      TABLEAU_OPS_STALE_DAYS: tableauOpsStaleDays,
+      TABLEAU_OPS_OVERLAP_WINDOW_MS: tableauOpsOverlapWindowMs,
+      TABLEAU_OPS_ENRICH_JOB_CONFLICTS_METADATA: tableauOpsEnrichJobConflictsMetadata,
+      TABLEAU_ARCHIVE_S3_BUCKET: tableauArchiveS3Bucket,
+      TABLEAU_ARCHIVE_S3_PREFIX: tableauArchiveS3Prefix,
+      TABLEAU_ARCHIVE_AWS_REGION: tableauArchiveAwsRegion,
     } = cleansedVars;
 
     let jwtUsername = '';
@@ -227,6 +250,9 @@ export class Config {
     this.productTelemetryEnabled = productTelemetryEnabled !== 'false';
     this.isHyperforce = isHyperforce === 'true';
 
+    const jwtSubHeaderTrimmed = jwtSubClaimHeader?.trim() ?? '';
+    this.jwtSubClaimRequestHeaderName = jwtSubHeaderTrimmed.toLowerCase();
+
     this.auth = isAuthType(auth) ? auth : this.oauth.enabled ? 'oauth' : 'pat';
     this.transport = isTransport(transport) ? transport : this.oauth.enabled ? 'http' : 'stdio';
 
@@ -278,6 +304,8 @@ export class Config {
         throw new Error('TRANSPORT must be "http" when OAUTH_ISSUER is set');
       }
     }
+
+    validateJwtSubClaimHeaderConfig(this);
 
     this.maxRequestTimeoutMs = parseNumber(maxRequestTimeoutMs, {
       defaultValue: TEN_MINUTES_IN_MS,
@@ -342,6 +370,49 @@ export class Config {
       uatPrivateKey || (uatPrivateKeyPath ? readFileSync(uatPrivateKeyPath, 'utf8') : '');
     this.uatKeyId = uatKeyId ?? '';
     this.jwtAdditionalPayload = jwtAdditionalPayload || '{}';
+
+    this.tableauOpsRunningThresholdMinutes = parseNumber(tableauOpsRunningThresholdMinutes, {
+      defaultValue: 45,
+      minValue: 1,
+      maxValue: 24 * 60,
+    });
+    this.tableauOpsStaleDays = parseNumber(tableauOpsStaleDays, {
+      defaultValue: 365,
+      minValue: 1,
+      maxValue: 3650,
+    });
+    this.tableauOpsOverlapWindowMs = parseNumber(tableauOpsOverlapWindowMs, {
+      defaultValue: 120_000,
+      minValue: 1000,
+      maxValue: 3_600_000,
+    });
+    this.tableauOpsEnrichJobConflictsWithMetadata =
+      tableauOpsEnrichJobConflictsMetadata !== 'false';
+
+    this.tableauArchiveS3Bucket = tableauArchiveS3Bucket?.trim() ?? '';
+    this.tableauArchiveS3Prefix = (
+      tableauArchiveS3Prefix?.trim() || 'tableau-mcp-archives'
+    ).replace(/^\/+|\/+$/g, '');
+    this.tableauArchiveAwsRegion = tableauArchiveAwsRegion?.trim() ?? '';
+  }
+}
+
+function validateJwtSubClaimHeaderConfig(config: Config): void {
+  if (!config.jwtSubClaimRequestHeaderName) {
+    return;
+  }
+
+  if (config.transport !== 'http') {
+    throw new Error('JWT_SUB_CLAIM_HEADER is only supported when TRANSPORT is "http"');
+  }
+  if (config.oauth.enabled) {
+    throw new Error(
+      'JWT_SUB_CLAIM_HEADER cannot be used when OAuth is enabled (OAUTH_ISSUER is set)',
+    );
+  }
+
+  if (!isSafeHttpHeaderName(config.jwtSubClaimRequestHeaderName)) {
+    throw new Error('JWT_SUB_CLAIM_HEADER must be a valid HTTP header name');
   }
 }
 

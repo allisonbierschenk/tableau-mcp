@@ -11,6 +11,7 @@ export interface ProcessEnvEx {
   PAT_NAME: string | undefined;
   PAT_VALUE: string | undefined;
   JWT_SUB_CLAIM: string | undefined;
+  JWT_SUB_CLAIM_HEADER: string | undefined;
   CONNECTED_APP_CLIENT_ID: string | undefined;
   CONNECTED_APP_SECRET_ID: string | undefined;
   CONNECTED_APP_SECRET_VALUE: string | undefined;

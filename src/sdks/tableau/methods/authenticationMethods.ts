@@ -27,7 +27,7 @@ export class AuthenticationMethods extends Methods<typeof authenticationApis> {
    * @link https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_ref_authentication.htm#sign_in
    */
   signIn = async (authConfig: AuthConfig): Promise<Credentials> => {
-    return (
+    const credentials = (
       await this._apiClient.signIn({
         credentials: {
           site: {
@@ -76,6 +76,15 @@ export class AuthenticationMethods extends Methods<typeof authenticationApis> {
         },
       })
     ).credentials;
+
+    // Diagnostic logging to confirm the authenticated site context used by subsequent requests.
+    console.warn('Authenticated Tableau site context:', {
+      siteId: credentials.site.id,
+      requestedSiteName: authConfig.siteName,
+      authType: authConfig.type,
+    });
+
+    return credentials;
   };
 }
 

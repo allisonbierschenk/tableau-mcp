@@ -19,6 +19,17 @@ export default class WorkbooksMethods extends AuthenticatedMethods<typeof workbo
     super(new Zodios(baseUrl, workbooksApis, { axiosConfig }), creds);
   }
 
+  private jsonWriteHeaders(): AxiosRequestConfig {
+    return {
+      ...this.authHeader,
+      headers: {
+        ...this.authHeader.headers,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    };
+  }
+
   /**
    * Returns information about the specified workbook, including information about views and tags.
    *
@@ -57,22 +68,142 @@ export default class WorkbooksMethods extends AuthenticatedMethods<typeof workbo
   queryWorkbooksForSite = async ({
     siteId,
     filter,
+    sort,
+    fields,
     pageSize,
     pageNumber,
   }: {
     siteId: string;
-    filter: string;
+    filter?: string;
+    sort?: string;
+    fields?: string;
     pageSize?: number;
     pageNumber?: number;
   }): Promise<{ pagination: Pagination; workbooks: Workbook[] }> => {
     const response = await this._apiClient.queryWorkbooksForSite({
       params: { siteId },
-      queries: { filter, pageSize, pageNumber },
+      queries: { filter, sort, fields, pageSize, pageNumber },
       ...this.authHeader,
     });
     return {
       pagination: response.pagination,
       workbooks: response.workbooks.workbook ?? [],
     };
+  };
+
+  /**
+   * Returns the workbooks for the specified user.
+   *
+   * Required scopes: `tableau:content:read`
+   *
+   * Resolve the target user's LUID with admin-users before calling when starting from an email.
+   *
+   * @link https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_ref_workbooks_and_views.htm#query_workbooks_for_user
+   */
+  queryWorkbooksForUser = async ({
+    siteId,
+    userId,
+    ownedBy,
+    filter,
+    sort,
+    fields,
+    pageSize,
+    pageNumber,
+  }: {
+    siteId: string;
+    userId: string;
+    ownedBy?: 'true' | 'false';
+    filter?: string;
+    sort?: string;
+    fields?: string;
+    pageSize?: number;
+    pageNumber?: number;
+  }): Promise<{ pagination: Pagination; workbooks: Workbook[] }> => {
+    const response = await this._apiClient.queryWorkbooksForUser({
+      params: { siteId, userId },
+      queries: { ownedBy, filter, sort, fields, pageSize, pageNumber },
+      ...this.authHeader,
+    });
+    return {
+      pagination: response.pagination,
+      workbooks: response.workbooks.workbook ?? [],
+    };
+  };
+
+  /**
+   * Updates the specified workbook.
+   *
+   * Required scopes: `tableau:content:update`
+   */
+  updateWorkbook = async ({
+    siteId,
+    workbookId,
+    body,
+  }: {
+    siteId: string;
+    workbookId: string;
+    body: unknown;
+  }): Promise<unknown> =>
+    await this._apiClient.updateWorkbook({
+      params: { siteId, workbookId },
+      body,
+      ...this.jsonWriteHeaders(),
+    });
+
+  /**
+   * Deletes the specified workbook.
+   *
+   * Required scopes: `tableau:content:delete`
+   */
+  deleteWorkbook = async ({
+    siteId,
+    workbookId,
+  }: {
+    siteId: string;
+    workbookId: string;
+  }): Promise<unknown> =>
+    await this._apiClient.deleteWorkbook({
+      params: { siteId, workbookId },
+      ...this.authHeader,
+    });
+
+  /**
+   * Downloads workbook file (.twbx) bytes.
+   *
+   * @link https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_ref_workbooks_and_views.htm
+   */
+  downloadWorkbookContent = async ({
+    siteId,
+    workbookId,
+  }: {
+    siteId: string;
+    workbookId: string;
+  }): Promise<ArrayBuffer> => {
+    const response = await this._apiClient.axios.get<ArrayBuffer>(
+      `/sites/${siteId}/workbooks/${workbookId}/content`,
+      {
+        ...this.authHeader,
+        responseType: 'arraybuffer',
+      },
+    );
+    return response.data;
+  };
+
+  /** Full workbook JSON including fields not modeled in {@link workbookSchema} (e.g. contentPermissions). */
+  getWorkbookRaw = async ({
+    siteId,
+    workbookId,
+  }: {
+    siteId: string;
+    workbookId: string;
+  }): Promise<unknown> => {
+    const response = await this._apiClient.axios.get(`/sites/${siteId}/workbooks/${workbookId}`, {
+      ...this.authHeader,
+      headers: {
+        ...this.authHeader.headers,
+        Accept: 'application/json',
+      },
+    });
+    return response.data;
   };
 }

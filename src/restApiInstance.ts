@@ -16,21 +16,31 @@ import {
 import { RestApi } from './sdks/tableau/restApi.js';
 import { Server, userAgent } from './server.js';
 import { TableauAuthInfo } from './server/oauth/schemas.js';
+import { getTableauAuthInfoFromRequestContext } from './server/tableauRequestContext.js';
 import { TableauRequestHandlerExtra } from './tools/toolContext.js';
 import { isAxiosError } from './utils/axios.js';
 import { getExceptionMessage } from './utils/getExceptionMessage.js';
 import invariant from './utils/invariant.js';
 
-type JwtScopes =
+export type JwtScopes =
   | 'tableau:viz_data_service:read'
   | 'tableau:content:read'
+  | 'tableau:content:update'
+  | 'tableau:content:delete'
   | 'tableau:insight_definitions_metrics:read'
   | 'tableau:insight_metrics:read'
   | 'tableau:metric_subscriptions:read'
   | 'tableau:insights:read'
   | 'tableau:views:download'
   | 'tableau:insight_brief:create'
-  | 'tableau:mcp_site_settings:read';
+  | 'tableau:mcp_site_settings:read'
+  | 'tableau:permissions:read'
+  | 'tableau:permissions:update'
+  | 'tableau:permissions:delete'
+  | 'tableau:jobs:read'
+  | 'tableau:jobs:update'
+  | 'tableau:users:read'
+  | 'tableau:groups:read';
 
 export type RestApiArgs = Pick<
   TableauRequestHandlerExtra,
@@ -282,14 +292,27 @@ function getUserAgent(server: Server): string {
   return userAgentParts.join(' ');
 }
 
+function resolveTableauAuthForJwt(
+  authInfo: TableauAuthInfo | undefined,
+): TableauAuthInfo | undefined {
+  const fromRequest = getTableauAuthInfoFromRequestContext();
+  const u = fromRequest?.username;
+  if (u != null && String(u).trim() !== '') {
+    return { ...authInfo, ...fromRequest };
+  }
+  return authInfo;
+}
+
 function getJwtUsername(config: Config, authInfo: TableauAuthInfo | undefined): string {
-  return config.jwtUsername.replaceAll('{OAUTH_USERNAME}', authInfo?.username ?? '');
+  const auth = resolveTableauAuthForJwt(authInfo);
+  return config.jwtUsername.replaceAll('{OAUTH_USERNAME}', auth?.username ?? '');
 }
 
 function getJwtAdditionalPayload(
   config: Config,
   authInfo: TableauAuthInfo | undefined,
 ): Record<string, unknown> {
-  const json = config.jwtAdditionalPayload.replaceAll('{OAUTH_USERNAME}', authInfo?.username ?? '');
+  const auth = resolveTableauAuthForJwt(authInfo);
+  const json = config.jwtAdditionalPayload.replaceAll('{OAUTH_USERNAME}', auth?.username ?? '');
   return JSON.parse(json || '{}');
 }
