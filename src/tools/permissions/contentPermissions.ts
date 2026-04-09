@@ -78,8 +78,18 @@ const jwtScopesByOperation: Record<ContentPermissionsOperation, Array<string>> =
 const paramsSchema = {
   operation: z.enum(operations),
   siteId: z.string().optional(),
-  granularKind: z.enum(granularKinds).optional(),
-  resourceId: z.string().optional(),
+  granularKind: z
+    .enum(granularKinds)
+    .optional()
+    .describe(
+      'For workbook ACLs use `workbook`. `resourceId` must be the workbook LUID, not the display name.',
+    ),
+  resourceId: z
+    .string()
+    .optional()
+    .describe(
+      'Target resource LUID. For workbooks: resolve with content-workbooks (e.g. query-workbooks-for-site, filter name:eq:<Name>) then pass workbook id here.',
+    ),
   projectId: z.string().optional(),
   defaultSegment: z.enum(defaultSegments).optional(),
   replaceProjectSegment: z.enum(replaceProjectSegments).optional(),
@@ -96,7 +106,7 @@ export const getContentPermissionsTool = (server: Server): Tool<typeof paramsSch
     server,
     name: 'content-permissions',
     description:
-      'Tableau REST API permissions (Ask Data / lens endpoints excluded). Granular list/add/delete for collections, data sources, projects, views, virtual connections, and workbooks; default permissions per project segment; replace project defaults (API 3.23+); replace content permissions (API 3.23+).',
+      'Tableau REST API permissions (Ask Data / lens endpoints excluded). Granular list/add/delete for collections, data sources, projects, views, virtual connections, and workbooks; default permissions per project segment; replace project defaults (API 3.23+); replace content permissions (API 3.23+). Workbook ACL recipe: use content-workbooks with operation query-workbooks-for-site and a filter (e.g. name:eq:<WorkbookName>) to get the workbook id (LUID), then list-granular-permissions with granularKind workbook and resourceId = that LUID. list-granular-permissions requires tableau:permissions:read. Results are explicit grantees (users/groups); expand groups via admin-groups/admin-users and account for inheritance (project defaults, site roles) for a full picture of who can effectively view content.',
     paramsSchema,
     annotations: {
       title: 'Content permissions',

@@ -49,7 +49,7 @@ export const getContentWorkbooksTool = (server: Server): Tool<typeof paramsSchem
   const tool = new Tool({
     server,
     name: 'content-workbooks',
-    description: `Tableau workbooks on the site: get, list with filter/sort/paging, list for a user (resolve email to LUID with admin-users first), update, delete, or download .twbx. Filter/sort syntax: ${filteringDoc}. Examples: projectName:eq:Samples, ownerEmail:eq:user@example.com (if supported on your server version).`,
+    description: `Tableau workbooks on the site: get, list with filter/sort/paging, list for a user (resolve email to LUID with admin-users first), update, delete, or download .twbx. Filter/sort syntax: ${filteringDoc}. Examples: projectName:eq:Samples, ownerEmail:eq:user@example.com (if supported on your server version). After you resolve a workbook (e.g. by name filter), use content-permissions with list-granular-permissions, granularKind workbook, and resourceId = workbook id (LUID)—not the display name—for ACL rows.`,
     paramsSchema,
     annotations: {
       title: 'Content — Workbooks',

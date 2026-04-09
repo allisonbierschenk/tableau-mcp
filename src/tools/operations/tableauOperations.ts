@@ -74,7 +74,7 @@ export const getTableauOperationsTool = (server: Server): Tool<typeof paramsSche
     server,
     name: 'tableau-operations',
     description:
-      'Higher-level Tableau Cloud operations (no Postgres): job overlap heuristics with optional Metadata enrichment for workbook→database context; live-only job duration flags (no historical μ/σ); bulk cancel with dryRun; effective Read estimates (site admin, owner, user/group deny-allow order); access trace; project permission overrides; stale workbooks; lineage/impact GraphQL; archive as S3 upload when TABLEAU_ARCHIVE_* env is set, else base64 for small .twbx. Defaults: TABLEAU_OPS_RUNNING_THRESHOLD_MINUTES, TABLEAU_OPS_STALE_DAYS, TABLEAU_OPS_OVERLAP_WINDOW_MS.',
+      'Higher-level Tableau Cloud operations (no Postgres): job overlap heuristics with optional Metadata enrichment for workbook→database context; live-only job duration flags (no historical μ/σ); bulk cancel with dryRun; get-effective-permissions gives effective Read for one userId + one workbookId (heuristic), not a site-wide list of viewers—for workbook ACL grantees use content-permissions list-granular-permissions; access trace; project permission overrides; stale workbooks; lineage/impact GraphQL; archive as S3 upload when TABLEAU_ARCHIVE_* env is set, else base64 for small .twbx. Defaults: TABLEAU_OPS_RUNNING_THRESHOLD_MINUTES, TABLEAU_OPS_STALE_DAYS, TABLEAU_OPS_OVERLAP_WINDOW_MS.',
     paramsSchema,
     annotations: {
       title: 'Tableau operations',

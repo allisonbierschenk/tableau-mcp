@@ -41,7 +41,7 @@ flowchart LR
 
 1. **Do not** put Tableau secrets or PATs in the Slack client. All MCP calls originate from **your backend**.
 2. **Per-user Tableau identity**: the MCP server can sign into Tableau as different users when using **direct-trust + JWT** and a **per-request HTTP header** (see §4.2).
-3. **Scope tools** for Slack: use `INCLUDE_TOOLS`, `EXCLUDE_TOOLS`, or group filters (`INCLUDE_TOOL_GROUPS` / `EXCLUDE_TOOL_GROUPS`) on the MCP server so Slack only exposes safe operations.
+3. **Scope tools** for Slack: use `INCLUDE_TOOLS` or `EXCLUDE_TOOLS` on the MCP server (comma-separated **tool names** and/or **group names** `admin`, `content`, `operations`; see [`src/overridableConfig.ts`](../../src/overridableConfig.ts)) so Slack only exposes safe operations.
 
 ---
 
@@ -101,12 +101,26 @@ Tools are registered in [`src/tools/toolName.ts`](../../src/tools/toolName.ts).
 | `admin-users` | `admin` | Site users: list, query, add, remove, update, CSV import/delete, credentials. |
 | `admin-groups` | `admin` | Groups / group sets and membership. |
 | `content-permissions` | `operations` | Tableau permissions REST: granular + default + replace (Ask Data / lens endpoints **not** exposed). |
+| `content-projects` | `content` | Site projects: query/create/update/delete with filter/sort/paging. |
+| `content-workbooks` | `content` | Workbooks: query, per-user query, get/raw, update/delete, download `.twbx`. |
+| `content-views` | `content` | Views: query site/workbook, data/image/PDF/crosstab exports. |
 | `site-jobs` | `operations` | `query-jobs`, `query-job`, `cancel-job` (cancel is **PUT** per Tableau). |
-| `tableau-operations` | `operations` | Composite Cloud-safe flows: job overlap + optional Metadata enrichment, live “long job” heuristics, bulk cancel (`dryRun` defaults true), effective Read permission estimate, access trace, content override scan, stale workbook report, lineage GraphQL, archive (.twbx base64 or **S3** if `TABLEAU_ARCHIVE_*` set on MCP server). |
+| `tableau-operations` | `operations` | Composite Cloud-safe flows: job overlap + optional Metadata enrichment, live “long job” heuristics, bulk cancel (`dryRun` defaults true), **per-user** effective Read estimate (`get-effective-permissions`), access trace, content override scan, stale workbook report, lineage GraphQL, archive (.twbx base64 or **S3** if `TABLEAU_ARCHIVE_*` set on MCP server). |
+
+### Who can access a workbook?
+
+Agents often need to answer “who can see workbook *X*?” using MCP tools:
+
+1. **`content-workbooks`** — `operation: query-workbooks-for-site` with a **filter** such as `name:eq:<WorkbookName>` to obtain the workbook **`id` (LUID)**.
+2. **`content-permissions`** — `operation: list-granular-permissions` with `granularKind: workbook` and `resourceId` set to that **LUID** (not the display name). Requires **`tableau:permissions:read`** on the Connected App / token.
+
+**Caveats:** The granular response lists **explicit ACL grantees** (users and groups). It is **not** automatically every person with effective access: expand **groups** (e.g. `admin-groups` / `admin-users`) and consider **inheritance** (project default permissions, site roles). `tableau-operations` → `get-effective-permissions` answers effective Read for **one** `userId` + **one** `workbookId`, not a full viewer list.
+
+**Deployment:** If Slack uses `INCLUDE_TOOLS` or `EXCLUDE_TOOLS`, ensure **`content-permissions`** and **`content-workbooks`** are included (by name or via the **`content`** and **`operations`** group names in the same comma list). Omitting them will make permission questions fail even though the server supports them.
 
 **Restricting tools on the MCP server** (so Slack cannot invoke dangerous ops):
 
-- Env: `INCLUDE_TOOLS` (comma list) or `EXCLUDE_TOOLS`, or `INCLUDE_TOOL_GROUPS` / `EXCLUDE_TOOL_GROUPS` (see [`src/overridableConfig.ts`](../../src/overridableConfig.ts)).
+- Env: `INCLUDE_TOOLS` or `EXCLUDE_TOOLS` — comma list of tool names and/or group names (`admin`, `content`, `operations`) (see [`src/overridableConfig.ts`](../../src/overridableConfig.ts)).
 
 ---
 
@@ -169,7 +183,7 @@ You are **not** calling Tableau URLs directly; you send MCP **`tools/call`** (or
 | `SERVER`, `SITE_NAME`, `AUTH`, secrets | Tableau sign-in from MCP. |
 | `JWT_SUB_CLAIM_HEADER` + `JWT_SUB_CLAIM={OAUTH_USERNAME}` | Per-Slack-user Tableau (with §4.2). |
 | `CORS_ORIGIN_CONFIG` | If a browser UI talks to MCP directly (usually avoid; prefer server-to-server). |
-| `INCLUDE_TOOLS` / `EXCLUDE_TOOL_GROUPS` | Limit blast radius for Slack users. |
+| `INCLUDE_TOOLS` / `EXCLUDE_TOOLS` | Limit blast radius for Slack users (tool names and/or `admin` / `content` / `operations` groups). |
 | `TABLEAU_OPS_*`, `TABLEAU_ARCHIVE_*` | Defaults for `tableau-operations` (see [`src/config.ts`](../../src/config.ts)). |
 
 ---
