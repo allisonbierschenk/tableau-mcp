@@ -1,3 +1,4 @@
+import { getAdminDatasourcesTool } from './admin/datasources/adminDatasources.js';
 import { getAdminGroupsTool } from './admin/groups/adminGroups.js';
 import { getAdminPulseTool } from './admin/pulse/adminPulse.js';
 import { getAdminUsersTool } from './admin/users/adminUsers.js';
@@ -12,6 +13,7 @@ export const toolFactories = [
   getAdminUsersTool,
   getAdminGroupsTool,
   getAdminPulseTool,
+  getAdminDatasourcesTool,
   getContentPermissionsTool,
   getContentProjectsTool,
   getContentWorkbooksTool,
