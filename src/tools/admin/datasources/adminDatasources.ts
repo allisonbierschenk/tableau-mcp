@@ -110,7 +110,7 @@ async function invokeOperation(
     case 'list-datasources':
       return await datasourcesMethods.listDatasources({
         siteId,
-        filter: required(args.filter, 'filter'),
+        filter: args.filter ?? '',
         pageSize: args.pageSize,
         pageNumber: args.pageNumber,
       });

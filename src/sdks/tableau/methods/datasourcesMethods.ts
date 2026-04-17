@@ -45,7 +45,7 @@ export default class DatasourcesMethods extends AuthenticatedMethods<typeof data
     pageNumber,
   }: {
     siteId: string;
-    filter: string;
+    filter?: string;
     pageSize?: number;
     pageNumber?: number;
   }): Promise<{ pagination: Pagination; datasources: DataSource[] }> => {
