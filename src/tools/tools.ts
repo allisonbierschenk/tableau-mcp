@@ -1,4 +1,5 @@
 import { getAdminGroupsTool } from './admin/groups/adminGroups.js';
+import { getAdminPulseTool } from './admin/pulse/adminPulse.js';
 import { getAdminUsersTool } from './admin/users/adminUsers.js';
 import { getContentProjectsTool } from './content/contentProjects.js';
 import { getContentViewsTool } from './content/contentViews.js';
@@ -10,6 +11,7 @@ import { getContentPermissionsTool } from './permissions/contentPermissions.js';
 export const toolFactories = [
   getAdminUsersTool,
   getAdminGroupsTool,
+  getAdminPulseTool,
   getContentPermissionsTool,
   getContentProjectsTool,
   getContentWorkbooksTool,

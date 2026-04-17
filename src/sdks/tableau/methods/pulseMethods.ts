@@ -7,15 +7,33 @@ import { pulseApis } from '../apis/pulseApi.js';
 import { Credentials } from '../types/credentials.js';
 import { PulsePagination } from '../types/pagination.js';
 import {
+  batchCreatePulseSubscriptionsRequestSchema,
+  createPulseMetricDefinitionRequestSchema,
+  createPulseMetricRequestSchema,
+  createPulseMetricTagRequestSchema,
+  createPulseSubscriptionRequestSchema,
+  getOrCreatePulseMetricRequestSchema,
+  PulseAlert,
   pulseBundleRequestSchema,
   PulseBundleResponse,
+  PulseEntitlements,
+  PulseFollowedMetricsGroup,
   pulseInsightBriefRequestSchema,
   PulseInsightBriefResponse,
   PulseInsightBundleType,
+  PulseMeasurementPeriod,
   PulseMetric,
   PulseMetricDefinition,
   PulseMetricDefinitionView,
+  PulseMetricFollowerCount,
   PulseMetricSubscription,
+  PulseMetricTag,
+  PulseRecommendedMetrics,
+  PulseSubscriptionDetail,
+  PulseUserPreferences,
+  updatePulseMetricDefinitionRequestSchema,
+  updatePulseMetricRequestSchema,
+  updatePulseUserPreferencesRequestSchema,
 } from '../types/pulse.js';
 import AuthenticatedMethods from './authenticatedMethods.js';
 
@@ -129,18 +147,19 @@ export default class PulseMethods extends AuthenticatedMethods<typeof pulseApis>
   };
 
   /**
-   * Returns a list of Pulse Metric Subscriptions for the current user.
+   * Returns a list of Pulse Metric Subscriptions for a user.
    *
    * Required scopes: `tableau:metric_subscriptions:read`
    *
+   * @param userId - The user ID to query subscriptions for. If not specified, uses the current authenticated user.
    * @link https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_ref_pulse.htm#PulseSubscriptionService_ListSubscriptions
    */
-  listPulseMetricSubscriptionsForCurrentUser = async (): Promise<
-    PulseResult<PulseMetricSubscription[]>
-  > => {
+  listPulseMetricSubscriptionsForCurrentUser = async (
+    userId?: string,
+  ): Promise<PulseResult<PulseMetricSubscription[]>> => {
     return await guardAgainstPulseDisabled(async () => {
       const response = await this._apiClient.listPulseMetricSubscriptionsForCurrentUser({
-        queries: { user_id: this.userId },
+        queries: { user_id: userId ?? this.userId },
         ...this.authHeader,
       });
       return response.subscriptions ?? [];
@@ -185,6 +204,251 @@ export default class PulseMethods extends AuthenticatedMethods<typeof pulseApis>
         { params: { bundle_type: bundleType }, ...this.authHeader },
       );
       return response ?? {};
+    });
+  };
+
+  // Metric Definition CRUD
+  createPulseMetricDefinition = async (
+    definitionRequest: z.infer<typeof createPulseMetricDefinitionRequestSchema>,
+  ): Promise<PulseResult<PulseMetricDefinition>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      return await this._apiClient.createPulseMetricDefinition(definitionRequest, this.authHeader);
+    });
+  };
+
+  getPulseMetricDefinition = async (
+    definitionId: string,
+    view?: PulseMetricDefinitionView,
+  ): Promise<PulseResult<PulseMetricDefinition>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      return await this._apiClient.getPulseMetricDefinition({
+        params: { definitionId },
+        queries: { view },
+        ...this.authHeader,
+      });
+    });
+  };
+
+  updatePulseMetricDefinition = async (
+    definitionId: string,
+    updateRequest: z.infer<typeof updatePulseMetricDefinitionRequestSchema>,
+  ): Promise<PulseResult<PulseMetricDefinition>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      return await this._apiClient.updatePulseMetricDefinition(
+        updateRequest,
+        { params: { definitionId }, ...this.authHeader },
+      );
+    });
+  };
+
+  deletePulseMetricDefinition = async (definitionId: string): Promise<PulseResult<void>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      await this._apiClient.deletePulseMetricDefinition({
+        params: { definitionId },
+        ...this.authHeader,
+      });
+    });
+  };
+
+  // Metric CRUD
+  createPulseMetric = async (
+    metricRequest: z.infer<typeof createPulseMetricRequestSchema>,
+  ): Promise<PulseResult<PulseMetric>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      return await this._apiClient.createPulseMetric(metricRequest, this.authHeader);
+    });
+  };
+
+  getPulseMetric = async (metricId: string): Promise<PulseResult<PulseMetric>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      return await this._apiClient.getPulseMetric({
+        params: { metricId },
+        ...this.authHeader,
+      });
+    });
+  };
+
+  updatePulseMetric = async (
+    metricId: string,
+    updateRequest: z.infer<typeof updatePulseMetricRequestSchema>,
+  ): Promise<PulseResult<PulseMetric>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      return await this._apiClient.updatePulseMetric(updateRequest, {
+        params: { metricId },
+        ...this.authHeader,
+      });
+    });
+  };
+
+  deletePulseMetric = async (metricId: string): Promise<PulseResult<void>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      await this._apiClient.deletePulseMetric({
+        params: { metricId },
+        ...this.authHeader,
+      });
+    });
+  };
+
+  getOrCreatePulseMetric = async (
+    metricRequest: z.infer<typeof getOrCreatePulseMetricRequestSchema>,
+  ): Promise<PulseResult<PulseMetric>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      return await this._apiClient.getOrCreatePulseMetric(metricRequest, this.authHeader);
+    });
+  };
+
+  listRecommendedPulseMetrics = async (
+    pageSize?: number,
+  ): Promise<PulseResult<PulseRecommendedMetrics>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      return await this._apiClient.listRecommendedPulseMetrics({
+        queries: { page_size: pageSize },
+        ...this.authHeader,
+      });
+    });
+  };
+
+  // Tags
+  createPulseMetricTag = async (
+    metricId: string,
+    tagRequest: z.infer<typeof createPulseMetricTagRequestSchema>,
+  ): Promise<PulseResult<PulseMetricTag>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      return await this._apiClient.createPulseMetricTag(tagRequest, {
+        params: { metricId },
+        ...this.authHeader,
+      });
+    });
+  };
+
+  deletePulseMetricTag = async (metricId: string, tagId: string): Promise<PulseResult<void>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      await this._apiClient.deletePulseMetricTag({
+        params: { metricId, tagId },
+        ...this.authHeader,
+      });
+    });
+  };
+
+  // Subscriptions
+  createPulseSubscription = async (
+    subscriptionRequest: z.infer<typeof createPulseSubscriptionRequestSchema>,
+  ): Promise<PulseResult<PulseSubscriptionDetail>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      return await this._apiClient.createPulseSubscription(subscriptionRequest, this.authHeader);
+    });
+  };
+
+  getPulseSubscription = async (
+    subscriptionId: string,
+  ): Promise<PulseResult<PulseSubscriptionDetail>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      return await this._apiClient.getPulseSubscription({
+        params: { subscriptionId },
+        ...this.authHeader,
+      });
+    });
+  };
+
+  deletePulseSubscription = async (subscriptionId: string): Promise<PulseResult<void>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      await this._apiClient.deletePulseSubscription({
+        params: { subscriptionId },
+        ...this.authHeader,
+      });
+    });
+  };
+
+  batchGetPulseSubscriptions = async (
+    subscriptionIds: string[],
+  ): Promise<PulseResult<PulseSubscriptionDetail[]>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      const response = await this._apiClient.batchGetPulseSubscriptions({
+        queries: { subscription_ids: subscriptionIds.join(',') },
+        ...this.authHeader,
+      });
+      return response.subscriptions ?? [];
+    });
+  };
+
+  batchCreatePulseSubscriptions = async (
+    subscriptionsRequest: z.infer<typeof batchCreatePulseSubscriptionsRequestSchema>,
+  ): Promise<PulseResult<PulseSubscriptionDetail[]>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      const response = await this._apiClient.batchCreatePulseSubscriptions(
+        subscriptionsRequest,
+        this.authHeader,
+      );
+      return response.subscriptions ?? [];
+    });
+  };
+
+  batchGetMetricFollowerCounts = async (
+    metricIds: string[],
+  ): Promise<PulseResult<PulseMetricFollowerCount[]>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      const response = await this._apiClient.batchGetMetricFollowerCounts({
+        queries: { metric_ids: metricIds.join(',') },
+        ...this.authHeader,
+      });
+      return response.follower_counts ?? [];
+    });
+  };
+
+  // User Preferences
+  getPulseUserPreferences = async (): Promise<PulseResult<PulseUserPreferences>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      return await this._apiClient.getPulseUserPreferences(this.authHeader);
+    });
+  };
+
+  updatePulseUserPreferences = async (
+    preferencesRequest: z.infer<typeof updatePulseUserPreferencesRequestSchema>,
+  ): Promise<PulseResult<PulseUserPreferences>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      return await this._apiClient.updatePulseUserPreferences(preferencesRequest, this.authHeader);
+    });
+  };
+
+  listFollowedMetricsGroups = async (): Promise<PulseResult<PulseFollowedMetricsGroup[]>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      const response = await this._apiClient.listFollowedMetricsGroups(this.authHeader);
+      return response.groups ?? [];
+    });
+  };
+
+  // Site & Configuration
+  getPulseEntitlements = async (): Promise<PulseResult<PulseEntitlements>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      return await this._apiClient.getPulseEntitlements(this.authHeader);
+    });
+  };
+
+  getPulseMeasurementPeriods = async (
+    definitionId: string,
+  ): Promise<PulseResult<PulseMeasurementPeriod[]>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      const response = await this._apiClient.getPulseMeasurementPeriods(
+        { definition_id: definitionId },
+        this.authHeader,
+      );
+      return response.periods ?? [];
+    });
+  };
+
+  listPulseAlerts = async (
+    pageSize?: number,
+    pageToken?: string,
+  ): Promise<PulseResult<{ alerts: PulseAlert[]; next_page_token?: string }>> => {
+    return await guardAgainstPulseDisabled(async () => {
+      const response = await this._apiClient.listPulseAlerts({
+        queries: { page_size: pageSize, page_token: pageToken },
+        ...this.authHeader,
+      });
+      return {
+        alerts: response.alerts ?? [],
+        next_page_token: response.next_page_token,
+      };
     });
   };
 }

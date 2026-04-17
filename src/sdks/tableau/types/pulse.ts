@@ -485,6 +485,184 @@ export const pulseMetricDefinitionViewEnum = [
 ] as const;
 export type PulseMetricDefinitionView = (typeof pulseMetricDefinitionViewEnum)[number];
 
+// Create metric definition request
+export const createPulseMetricDefinitionRequestSchema = z.object({
+  definition: z.object({
+    metadata: z.object({
+      name: z.string(),
+      description: z.string().optional(),
+    }),
+    specification: pulseSpecificationSchema,
+    extension_options: pulseExtensionOptionsSchema.optional(),
+    representation_options: pulseRepresentationOptionsSchema.optional(),
+    insights_options: insightOptionsSchema.optional(),
+    comparisons: comparisonSchema.optional(),
+    datasource_goals: datasourceGoalsSchema.optional(),
+  }),
+});
+
+// Update metric definition request
+export const updatePulseMetricDefinitionRequestSchema = z.object({
+  definition: z.object({
+    metadata: z.object({
+      name: z.string().optional(),
+      description: z.string().optional(),
+    }).optional(),
+    specification: pulseSpecificationSchema.optional(),
+    extension_options: pulseExtensionOptionsSchema.optional(),
+    representation_options: pulseRepresentationOptionsSchema.optional(),
+    insights_options: insightOptionsSchema.optional(),
+    comparisons: comparisonSchema.optional(),
+    datasource_goals: datasourceGoalsSchema.optional(),
+  }),
+  update_mask: z.string().optional(),
+});
+
+// Create metric request
+export const createPulseMetricRequestSchema = z.object({
+  metric: z.object({
+    definition_id: z.string(),
+    specification: pulseMetricSpecificationSchema,
+    goals: pulseGoalsSchema.optional(),
+  }),
+});
+
+// Update metric request
+export const updatePulseMetricRequestSchema = z.object({
+  metric: z.object({
+    specification: pulseMetricSpecificationSchema.optional(),
+    goals: pulseGoalsSchema.optional(),
+  }),
+  update_mask: z.string().optional(),
+});
+
+// Get or create metric request
+export const getOrCreatePulseMetricRequestSchema = z.object({
+  definition_id: z.string(),
+  specification: pulseMetricSpecificationSchema,
+});
+
+// Create subscription request
+export const createPulseSubscriptionRequestSchema = z.object({
+  subscription: z.object({
+    metric_id: z.string(),
+    subscriber: z.object({
+      user_id: z.string().optional(),
+      group_id: z.string().optional(),
+    }),
+  }),
+});
+
+// Batch create subscriptions request
+export const batchCreatePulseSubscriptionsRequestSchema = z.object({
+  subscriptions: z.array(
+    z.object({
+      metric_id: z.string(),
+      subscriber: z.object({
+        user_id: z.string().optional(),
+        group_id: z.string().optional(),
+      }),
+    }),
+  ),
+});
+
+// Subscription with details
+export const pulseSubscriptionDetailSchema = pulseMetricSubscriptionSchema.extend({
+  subscriber: z.object({
+    user_id: z.string().optional(),
+    group_id: z.string().optional(),
+  }).optional(),
+  created_at: z.string().optional(),
+});
+
+// Tag schema
+export const pulseMetricTagSchema = z.object({
+  id: z.string(),
+  metric_id: z.string(),
+  user_id: z.string(),
+  tag_name: z.string(),
+  created_at: z.string().optional(),
+});
+
+// Create tag request
+export const createPulseMetricTagRequestSchema = z.object({
+  tag: z.object({
+    tag_name: z.string(),
+  }),
+});
+
+// User preferences
+export const pulseUserPreferencesSchema = z.object({
+  user_id: z.string(),
+  notification_settings: z.object({
+    email_enabled: z.boolean().optional(),
+    slack_enabled: z.boolean().optional(),
+  }).optional(),
+  grouping_preferences: z.object({
+    group_by_metric: z.boolean().optional(),
+  }).optional(),
+});
+
+// Update user preferences request
+export const updatePulseUserPreferencesRequestSchema = z.object({
+  preferences: pulseUserPreferencesSchema.partial(),
+  update_mask: z.string().optional(),
+});
+
+// Followed metrics group
+export const pulseFollowedMetricsGroupSchema = z.object({
+  group_name: z.string().optional(),
+  metrics: z.array(pulseMetricSchema),
+});
+
+// Entitlements
+export const pulseEntitlementsSchema = z.object({
+  pulse_enabled: z.boolean(),
+  premium_features: z.object({
+    ai_insights_enabled: z.boolean().optional(),
+    advanced_analytics_enabled: z.boolean().optional(),
+  }).optional(),
+});
+
+// Measurement period
+export const pulseMeasurementPeriodSchema = z.object({
+  granularity: z.string(),
+  start_date: z.string(),
+  end_date: z.string(),
+});
+
+// Alert schema
+export const pulseAlertSchema = z.object({
+  id: z.string(),
+  metric_id: z.string(),
+  definition_id: z.string(),
+  alert_type: z.string(),
+  created_at: z.string(),
+  message: z.string().optional(),
+  insight: z.any().optional(),
+});
+
+// Recommended metrics
+export const pulseRecommendedMetricsSchema = z.object({
+  metrics: z.array(pulseMetricSchema),
+  total_available: z.number(),
+});
+
+// Follower counts
+export const pulseMetricFollowerCountSchema = z.object({
+  metric_id: z.string(),
+  follower_count: z.number(),
+});
+
 export type PulseMetricDefinition = z.infer<typeof pulseMetricDefinitionSchema>;
 export type PulseMetric = z.infer<typeof pulseMetricSchema>;
 export type PulseMetricSubscription = z.infer<typeof pulseMetricSubscriptionSchema>;
+export type PulseSubscriptionDetail = z.infer<typeof pulseSubscriptionDetailSchema>;
+export type PulseMetricTag = z.infer<typeof pulseMetricTagSchema>;
+export type PulseUserPreferences = z.infer<typeof pulseUserPreferencesSchema>;
+export type PulseFollowedMetricsGroup = z.infer<typeof pulseFollowedMetricsGroupSchema>;
+export type PulseEntitlements = z.infer<typeof pulseEntitlementsSchema>;
+export type PulseMeasurementPeriod = z.infer<typeof pulseMeasurementPeriodSchema>;
+export type PulseAlert = z.infer<typeof pulseAlertSchema>;
+export type PulseRecommendedMetrics = z.infer<typeof pulseRecommendedMetricsSchema>;
+export type PulseMetricFollowerCount = z.infer<typeof pulseMetricFollowerCountSchema>;
