@@ -423,7 +423,13 @@ async function opStaleReport(
 ): Promise<unknown> {
   const staleDays = args.staleDays ?? config.tableauOpsStaleDays;
   const cutoff = Date.now() - staleDays * 86400000;
-  const stale: Array<{ workbookId: string; name?: string; updatedAt?: string }> = [];
+  const stale: Array<{
+    workbookId: string;
+    name?: string;
+    updatedAt?: string;
+    ownerId?: string;
+    projectName?: string;
+  }> = [];
   let page = 1;
   const pageSize = 100;
   for (;;) {
@@ -444,7 +450,13 @@ async function opStaleReport(
         : '';
       const t = parseIsoUtc(updatedAt);
       if (t != null && t < cutoff) {
-        stale.push({ workbookId: wb.id, name: wb.name, updatedAt: updatedAt || undefined });
+        stale.push({
+          workbookId: wb.id,
+          name: wb.name,
+          updatedAt: updatedAt || undefined,
+          ownerId: wb.owner?.id,
+          projectName: wb.project?.name,
+        });
       }
     }
     if (wbs.length < pageSize) {
@@ -456,7 +468,7 @@ async function opStaleReport(
     }
   }
   return {
-    note: 'Uses workbook updatedAt/createdAt from REST JSON when present; validate fields on your site.',
+    note: 'Uses workbook updatedAt/createdAt from REST JSON when present; validate fields on your site. Use admin-users query-user-on-site with ownerId to get user details.',
     staleDays,
     staleWorkbooks: stale,
   };
