@@ -25,7 +25,7 @@ vi.mock('../../../restApiInstance.js', () => ({
     }),
   ),
 }));
-
+ 
 describe('getGeneratePulseInsightBriefTool', () => {
   const briefRequest = {
     language: 'LANGUAGE_EN_US' as const,
