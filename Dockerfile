@@ -14,8 +14,11 @@ RUN npm run build
 FROM node:22-alpine AS runner
 WORKDIR /app
 
-# Copy package files and install production dependencies without scripts
-COPY package.json package-lock.json ./
+# Copy package files and feature config; install production dependencies without scripts.
+# features.json must be present at /app/features.json — featureGate.ts reads it at startup
+# and crashes with ENOENT if missing, which cascades into "An unexpected error occurred
+# while getting MCP settings for site." on every MCP request.
+COPY package.json package-lock.json features.json ./
 RUN npm ci --omit=dev --production --ignore-scripts
 
 # Copy built artifacts from builder
